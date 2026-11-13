@@ -142,7 +142,7 @@ export function ChartsRow({ status, data, error, onRetry }: RowProps) {
                   value: "Peak curve",
                   position: "insideTopLeft",
                   fill: "var(--destructive)",
-                  fontSize: 11,
+                  fontSize: 12,
                 }}
               />
               <Area

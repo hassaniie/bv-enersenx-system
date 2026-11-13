@@ -192,7 +192,7 @@ export function BreakdownRow({ status, data, error, onRetry }: RowProps) {
                     <Progress
                       value={(e.share / equipment[0].share) * 100}
                       aria-label={`${e.name} share`}
-                      className="hidden sm:flex [&_[data-slot=progress-indicator]]:bg-success"
+                      className="hidden sm:flex"
                     />
                     <span className="text-end font-medium tabular-nums">{e.share.toFixed(1)}%</span>
                   </li>

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ActivityIcon, ChartSplineIcon, PiggyBankIcon, RotateCcwIcon } from "lucide-react"
+import { ActivityIcon, ChartSplineIcon, PiggyBankIcon } from "lucide-react"
 import { useTable, type ColumnDef } from "@tanstack/react-table"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatPkr, type DashboardData, type PowerQualityRow } from "@/lib/dashboard-data"
 
 import { Panel } from "./panel"
-import { PanelState, type PanelStatus } from "./panel-state"
+import { PanelError, PanelState, type PanelStatus } from "./panel-state"
 
 type RowProps = {
   status: PanelStatus
@@ -159,7 +159,7 @@ function Stat({
         >
           {value}
         </span>
-        <span className="truncate text-xs text-info-foreground dark:text-info">{unit}</span>
+        <span className="truncate text-xs text-muted-foreground">{unit}</span>
       </div>
     </div>
   )
@@ -204,14 +204,8 @@ function PowerQuality({
 
   const emptyMessage =
     status === "error" ? (
-      <div className="flex flex-col items-center gap-2 py-6 text-sm">
-        <span className="text-destructive-foreground dark:text-destructive">
-          {error ?? "Couldn’t load power quality."}
-        </span>
-        <Button size="xs" variant="outline" onClick={onRetry}>
-          <RotateCcwIcon data-icon="inline-start" />
-          Retry
-        </Button>
+      <div className="p-4 text-start">
+        <PanelError title="Couldn’t load power quality" error={error} onRetry={onRetry} />
       </div>
     ) : (
       <Empty>

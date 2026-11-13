@@ -22,7 +22,7 @@ const icons: Record<string, LucideIcon> = {
   demand: GaugeIcon,
 }
 
-// Tile tint (icon only) and the note's text color, per tone.
+// The note's text color, per tone.
 const tone = {
   neutral: { note: "text-muted-foreground" },
   info: { note: "text-info-foreground dark:text-info" },

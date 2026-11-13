@@ -32,6 +32,31 @@ type PanelStateProps = {
   children: React.ReactNode
 }
 
+/** Inline error with Retry, shared by every data region. */
+export function PanelError({
+  title = "Couldn’t load data",
+  error,
+  onRetry,
+}: {
+  title?: string
+  error?: string
+  onRetry?: () => void
+}) {
+  return (
+    <Alert variant="destructive">
+      <CircleAlertIcon />
+      <AlertTitle>{title}</AlertTitle>
+      <AlertDescription>{error ?? "Something went wrong."}</AlertDescription>
+      <AlertAction>
+        <Button size="xs" variant="outline" onClick={onRetry}>
+          <RotateCcwIcon data-icon="inline-start" />
+          Retry
+        </Button>
+      </AlertAction>
+    </Alert>
+  )
+}
+
 /** Shared loading / error / empty handling, so every data region owns its states. */
 export function PanelState({
   status,
@@ -52,19 +77,7 @@ export function PanelState({
   }
 
   if (status === "error") {
-    return (
-      <Alert variant="destructive">
-        <CircleAlertIcon />
-        <AlertTitle>Couldn’t load data</AlertTitle>
-        <AlertDescription>{error ?? "Something went wrong."}</AlertDescription>
-        <AlertAction>
-          <Button size="xs" variant="outline" onClick={onRetry}>
-            <RotateCcwIcon data-icon="inline-start" />
-            Retry
-          </Button>
-        </AlertAction>
-      </Alert>
-    )
+    return <PanelError error={error} onRetry={onRetry} />
   }
 
   if (isEmpty) {
