@@ -1,0 +1,271 @@
+"use client"
+
+import * as React from "react"
+import { CircleDotIcon, DownloadIcon, FileTextIcon, Share2Icon, TagIcon, Trash2Icon } from "lucide-react"
+import { useTable, type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table"
+
+import { DataGrid, dataGridFeatures, type DataGridFeatures } from "@/components/reui/data-grid/data-grid"
+import { DataGridColumnHeader } from "@/components/reui/data-grid/data-grid-column-header"
+import { DataGridPagination } from "@/components/reui/data-grid/data-grid-pagination"
+import { DataGridScrollArea } from "@/components/reui/data-grid/data-grid-scroll-area"
+import { DataGridTable } from "@/components/reui/data-grid/data-grid-table"
+import { Filters } from "@/components/reui/filters/filters"
+import type { FilterField, FilterQuery } from "@/components/reui/filters/filters-types"
+import { Frame, FrameFooter, FrameHeader, FramePanel, FrameTitle } from "@/components/reui/frame"
+import { GridFill } from "@/components/dashboard/grid-fill"
+import { PanelState, type PanelStatus } from "@/components/dashboard/panel-state"
+import { Button } from "@/components/ui/button"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { formatDate, typeLabels, type GeneratedReport, type ReportStatus, type ReportType } from "@/lib/reports-data"
+
+import { PersonCell, ReportStatusBadge, ReportTypeBadge, statusMeta } from "./report-meta"
+
+export type ReportRowActions = {
+  onDownload: (r: GeneratedReport) => void
+  onShare: (r: GeneratedReport) => void
+  onDelete: (r: GeneratedReport) => void
+}
+
+function RowAction({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string
+  disabled?: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={<Button variant="ghost" size="icon-sm" aria-label={label} disabled={disabled} onClick={onClick} />}
+      >
+        {children}
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+const statusOrder: ReportStatus[] = ["failed", "processing", "completed"]
+
+export function ReportsTable({
+  status,
+  reports,
+  totalReports,
+  query,
+  onQueryChange,
+  error,
+  onRetry,
+  onClear,
+  onGenerate,
+  actions,
+}: {
+  status: PanelStatus
+  /** Rows after search, range and filters. */
+  reports: GeneratedReport[]
+  /** Rows before any narrowing, to tell "no reports" from "no matches". */
+  totalReports: number
+  query: FilterQuery
+  onQueryChange: (q: FilterQuery) => void
+  error?: string
+  onRetry: () => void
+  onClear: () => void
+  onGenerate: () => void
+  actions: ReportRowActions
+}) {
+  const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 8 })
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: "date", desc: true }])
+
+  // Any narrowing can leave the current page past the end; go back to page 1.
+  React.useEffect(() => setPagination((p) => ({ ...p, pageIndex: 0 })), [reports.length])
+
+  const fields = React.useMemo<FilterField[]>(
+    () => [
+      {
+        id: "type",
+        label: "Type",
+        type: "select",
+        defaultOperator: "is_any_of",
+        options: (Object.keys(typeLabels) as ReportType[]).map((t) => ({ value: t, label: typeLabels[t] })),
+        searchable: false,
+        icon: <TagIcon />,
+      },
+      {
+        id: "status",
+        label: "Status",
+        type: "select",
+        defaultOperator: "is_any_of",
+        options: statusOrder.map((s) => ({ value: s, label: statusMeta[s].label })),
+        searchable: false,
+        icon: <CircleDotIcon />,
+      },
+    ],
+    []
+  )
+
+  const columns = React.useMemo<ColumnDef<DataGridFeatures, GeneratedReport>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: ({ column }) => <DataGridColumnHeader title="Report Name" column={column} />,
+        size: 220,
+        cell: ({ row }) => <span className="font-medium text-foreground">{row.original.name}</span>,
+        meta: { skeleton: <Skeleton className="h-4 w-40" /> },
+      },
+      {
+        accessorKey: "type",
+        header: ({ column }) => <DataGridColumnHeader title="Type" column={column} />,
+        size: 110,
+        cell: ({ row }) => <ReportTypeBadge type={row.original.type} />,
+        meta: { skeleton: <Skeleton className="h-5 w-16" /> },
+      },
+      {
+        accessorKey: "date",
+        header: ({ column }) => <DataGridColumnHeader title="Date Generated" column={column} />,
+        size: 120,
+        cell: ({ row }) => <span className="tabular-nums">{formatDate(row.original.date)}</span>,
+        meta: { skeleton: <Skeleton className="h-4 w-20" /> },
+      },
+      {
+        id: "by",
+        accessorFn: (r) => r.by.name,
+        header: ({ column }) => <DataGridColumnHeader title="Generated By" column={column} />,
+        size: 150,
+        cell: ({ row }) => <PersonCell person={row.original.by} />,
+        meta: { skeleton: <Skeleton className="h-4 w-24" /> },
+      },
+      {
+        accessorKey: "sizeMb",
+        header: ({ column }) => <DataGridColumnHeader title="File Size" column={column} />,
+        size: 90,
+        cell: ({ row }) => (row.original.status === "processing" ? "—" : `${row.original.sizeMb.toFixed(1)} MB`),
+        meta: {
+          headerClassName: "text-end [&>div]:justify-end",
+          cellClassName: "text-end tabular-nums",
+          skeleton: <Skeleton className="ms-auto h-4 w-12" />,
+        },
+      },
+      {
+        id: "status",
+        accessorFn: (r) => statusOrder.indexOf(r.status),
+        header: ({ column }) => <DataGridColumnHeader title="Status" column={column} />,
+        size: 110,
+        cell: ({ row }) => <ReportStatusBadge status={row.original.status} />,
+        meta: { skeleton: <Skeleton className="h-5 w-20" /> },
+      },
+      {
+        id: "actions",
+        header: () => <span className="sr-only">Actions</span>,
+        size: 110,
+        enableSorting: false,
+        cell: ({ row }) => {
+          const r = row.original
+          const ready = r.status === "completed"
+          return (
+            <span className="flex items-center justify-end gap-1">
+              <RowAction label={`Download ${r.name}`} disabled={!ready} onClick={() => actions.onDownload(r)}>
+                <DownloadIcon />
+              </RowAction>
+              <RowAction label={`Share ${r.name}`} disabled={!ready} onClick={() => actions.onShare(r)}>
+                <Share2Icon />
+              </RowAction>
+              <RowAction label={`Delete ${r.name}`} onClick={() => actions.onDelete(r)}>
+                <Trash2Icon />
+              </RowAction>
+            </span>
+          )
+        },
+        meta: { skeleton: <Skeleton className="ms-auto h-6 w-20" /> },
+      },
+    ],
+    [actions]
+  )
+
+  const table = useTable({
+    features: dataGridFeatures,
+    columns,
+    data: status === "ready" ? reports : [],
+    pageCount: Math.ceil(reports.length / pagination.pageSize),
+    getRowId: (r) => r.id,
+    state: { pagination, sorting },
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+  })
+
+  const showGrid = status === "loading" || (status === "ready" && totalReports > 0)
+
+  return (
+    <DataGrid
+      table={table}
+      recordCount={status === "ready" ? reports.length : 0}
+      isLoading={status === "loading"}
+      tableLayout={{ headerBackground: true, rowBorder: true }}
+      tableClassNames={{ base: "h-full min-w-[910px]" }}
+      emptyMessage={
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileTextIcon />
+            </EmptyMedia>
+            <EmptyTitle>No reports match</EmptyTitle>
+            <EmptyDescription>Try another range, search or filter.</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button size="sm" variant="outline" onClick={onClear}>
+              Clear filters
+            </Button>
+          </EmptyContent>
+        </Empty>
+      }
+    >
+      <Frame spacing="default" className="min-w-0">
+        <FrameHeader className="flex-row items-center gap-2">
+          <FrameTitle>Generated Reports</FrameTitle>
+        </FrameHeader>
+        {showGrid ? (
+          <FramePanel className="flex flex-col p-0">
+            <div className="border-b p-3">
+              <Filters fields={fields} query={query} size="sm" showClear onQueryChange={onQueryChange} />
+            </div>
+            <div className="min-h-0 flex-1">
+              <GridFill>
+                <DataGridScrollArea orientation="horizontal" className="h-full">
+                  <DataGridTable />
+                </DataGridScrollArea>
+              </GridFill>
+            </div>
+          </FramePanel>
+        ) : (
+          <FramePanel className="flex flex-col gap-4">
+            <PanelState
+              status={status}
+              isEmpty
+              error={error}
+              onRetry={onRetry}
+              skeleton={null}
+              empty={{
+                icon: <FileTextIcon />,
+                title: "No reports yet",
+                description: "Generate one from a template above.",
+                action: "Generate report",
+                onAction: onGenerate,
+              }}
+            >
+              {null}
+            </PanelState>
+          </FramePanel>
+        )}
+        {showGrid && (
+          <FrameFooter>
+            <DataGridPagination sizes={[8, 16, 24]} />
+          </FrameFooter>
+        )}
+      </Frame>
+    </DataGrid>
+  )
+}

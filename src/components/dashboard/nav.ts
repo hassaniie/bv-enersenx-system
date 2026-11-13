@@ -26,8 +26,8 @@ export const nav: NavItem[] = [
   { title: "Utility Monitoring", icon: PlugZapIcon },
   { title: "Power Quality", icon: ActivityIcon },
   { title: "Alarms & Alerts", icon: BellIcon },
-  { title: "Reports", icon: FileTextIcon },
-  { title: "Analytics", icon: ChartPieIcon },
+  { title: "Reports", icon: FileTextIcon, href: "/reports/" },
+  { title: "Analytics", icon: ChartPieIcon, href: "/analytics/" },
   { title: "Settings", icon: SettingsIcon },
   { title: "User Management", icon: UsersIcon },
 ]

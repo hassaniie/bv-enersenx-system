@@ -11,8 +11,8 @@ import { DataGridPagination } from "@/components/reui/data-grid/data-grid-pagina
 import { DataGridScrollArea } from "@/components/reui/data-grid/data-grid-scroll-area"
 import { DataGridTable } from "@/components/reui/data-grid/data-grid-table"
 import { Filters } from "@/components/reui/filters/filters"
-import { createFilterQuery, isFilterRule } from "@/components/reui/filters/filters-query"
-import type { FilterField, FilterNode, FilterQuery, FilterRule } from "@/components/reui/filters/filters-types"
+import { createFilterQuery } from "@/components/reui/filters/filters-query"
+import type { FilterField, FilterQuery } from "@/components/reui/filters/filters-types"
 import { Frame, FrameFooter, FrameHeader, FramePanel, FrameTitle } from "@/components/reui/frame"
 import { PanelState, type PanelStatus } from "@/components/dashboard/panel-state"
 import { Button } from "@/components/ui/button"
@@ -20,53 +20,9 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Invoice, InvoiceStatus } from "@/lib/cost-savings-data"
 import { formatNumber } from "@/lib/dashboard-data"
+import { matchesQuery } from "@/lib/filter-predicate"
 
 import { InvoiceStatusBadge, invoiceStatusMeta } from "./status-badges"
-
-/* --------------------------- Query tree to predicate --------------------------- */
-// Adapted from c-filters-7: select fields only, so the "is" family plus empty checks is all we compile.
-
-function readField(row: Invoice, path: string): unknown {
-  return row[path as keyof Invoice]
-}
-
-function isIncomplete(rule: FilterRule) {
-  if (rule.operator === "empty" || rule.operator === "not_empty") return false
-  return rule.value === undefined || (Array.isArray(rule.value) && rule.value.length === 0)
-}
-
-function matchesRule(row: Invoice, rule: FilterRule): boolean {
-  const raw = readField(row, rule.path[0])
-  const actual = String(raw)
-  const value = rule.value
-  const result = (() => {
-    switch (rule.operator) {
-      case "is":
-        return actual === String(value)
-      case "is_not":
-        return actual !== String(value)
-      case "is_any_of":
-        return (value as string[]).includes(actual)
-      case "is_none_of":
-        return !(value as string[]).includes(actual)
-      case "empty":
-        return raw === undefined || raw === null || raw === ""
-      case "not_empty":
-        return !(raw === undefined || raw === null || raw === "")
-      default:
-        return true
-    }
-  })()
-  return rule.negated ? !result : result
-}
-
-function matches(row: Invoice, node: FilterNode): boolean {
-  if (isFilterRule(node)) return isIncomplete(node) ? true : matchesRule(row, node)
-  if (node.rules.length === 0) return true
-  return node.combinator === "and"
-    ? node.rules.every((child) => matches(row, child))
-    : node.rules.some((child) => matches(row, child))
-}
 
 const unique = (values: string[]) => [...new Set(values)].map((v) => ({ value: v, label: v }))
 
@@ -147,7 +103,7 @@ export function BillingPanel({
     [invoices]
   )
 
-  const rows = React.useMemo(() => invoices.filter((row) => matches(row, query)), [invoices, query])
+  const rows = React.useMemo(() => invoices.filter((row) => matchesQuery(row, query)), [invoices, query])
 
   const columns = React.useMemo<ColumnDef<DataGridFeatures, Invoice>[]>(
     () => [
