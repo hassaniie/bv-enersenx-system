@@ -2,8 +2,8 @@
 // `fetchCostSavings` with your real API call; every panel already handles
 // loading, empty and error.
 //
-// Derived figures (tariff cost and share, totals, invoice amounts, the savings
-// potential) are computed below from their inputs, so they cannot drift apart.
+// Derived figures (tariff cost and share, totals, the blended rate, the cost
+// KPIs, the 2025 comparison line, invoice amounts, the savings potential) are computed below from their inputs, so they cannot drift apart.
 
 import type { Kpi } from "@/lib/dashboard-data"
 
@@ -68,37 +68,11 @@ export type CostSavingsData = {
   comparison: CostComparisonPoint[]
   tariffs: TariffRow[]
   tariffTotal: { kwh: number; cost: number }
+  /** PKR per kWh: tariff total cost / total kWh. */
+  blendedRate: number
   opportunities: SavingsOpportunity[]
   invoices: Invoice[]
 }
-
-/* ---------------------------------- KPIs ---------------------------------- */
-
-const savingsTarget = 440_000
-const monthlySavings = 385_420
-const targetPercent = Math.round((monthlySavings / savingsTarget) * 1000) / 10 // 87.6
-
-const kpis: Kpi[] = [
-  { id: "cost", label: "Total Energy Cost", value: "2,458,750", unit: "PKR", note: "+3.2% vs last month", tone: "neutral" },
-  { id: "rate", label: "Cost per kWh", value: "72.5", unit: "PKR", note: "-2.2% vs national avg", tone: "info" },
-  {
-    id: "savings",
-    label: "Monthly Savings",
-    value: monthlySavings.toLocaleString("en-US"),
-    unit: "PKR",
-    note: `${(100 - targetPercent).toFixed(1)}% below target`,
-    tone: "warning",
-  },
-  {
-    id: "target",
-    label: "Savings vs Target",
-    value: `${targetPercent}%`,
-    unit: "",
-    note: `Target: PKR ${savingsTarget.toLocaleString("en-US")}`,
-    tone: "neutral",
-  },
-  { id: "budget", label: "Budget Utilization", value: "72.3%", unit: "", note: "", tone: "neutral", progress: 72.3 },
-]
 
 /* --------------------------------- Charts --------------------------------- */
 
@@ -118,21 +92,28 @@ const breakdown: CostBreakdownPoint[] = [
   { month: "Dec", grid: 10.6, genset: 13.7, solar: 15.6, gas: 8.7 },
 ]
 
-// PKR millions.
-const comparison: CostComparisonPoint[] = [
-  { month: "Jan", prev: 24.6, current: 21.6 },
-  { month: "Feb", prev: 21.9, current: 18.3 },
-  { month: "Mar", prev: 17.7, current: 14.2 },
-  { month: "Apr", prev: 15.6, current: 11.6 },
-  { month: "May", prev: 10.9, current: 7.4 },
-  { month: "Jun", prev: 4.3, current: 3.7 },
-  { month: "Jul", prev: 5.8, current: 1.7 },
-  { month: "Aug", prev: 8.3, current: 5.9 },
-  { month: "Sep", prev: 12.2, current: 7.6 },
-  { month: "Oct", prev: 14.2, current: 12.7 },
-  { month: "Nov", prev: 17.3, current: 15.3 },
-  { month: "Dec", prev: 21.7, current: 18.5 },
-]
+const round1 = (n: number) => Math.round(n * 10) / 10
+const round2 = (n: number) => Math.round(n * 100) / 100
+
+/** A month's total across every source, in PKR lakhs. */
+const monthTotal = (m: CostBreakdownPoint) => m.grid + m.genset + m.solar + m.gas
+
+// 2025 in PKR millions: the breakdown totals (1 lakh = 0.1 M), so both charts and
+// the Total Energy Cost KPI read from the same numbers.
+const current2025 = breakdown.map((m) => round2(monthTotal(m) / 10))
+
+// 2024 keeps the shape the Figma drew, scaled by one factor so its year total sits
+// against the 2025 total in the same proportion as in the Figma (old 2025 line below).
+const figma2024 = [24.6, 21.9, 17.7, 15.6, 10.9, 4.3, 5.8, 8.3, 12.2, 14.2, 17.3, 21.7]
+const figma2025 = [21.6, 18.3, 14.2, 11.6, 7.4, 3.7, 1.7, 5.9, 7.6, 12.7, 15.3, 18.5]
+const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
+const scale2024 = sum(current2025) / sum(figma2025)
+
+const comparison: CostComparisonPoint[] = breakdown.map((m, i) => ({
+  month: m.month,
+  prev: round2(figma2024[i] * scale2024),
+  current: current2025[i],
+}))
 
 /* --------------------------------- Tariffs -------------------------------- */
 
@@ -161,6 +142,48 @@ const tariffTotal = {
   kwh: tariffInputs.reduce((a, t) => a + (t.kwh ?? 0), 0),
   cost: tariffTotalCost,
 }
+
+/* ---------------------------------- KPIs ---------------------------------- */
+
+const latest = breakdown[breakdown.length - 1]
+const previous = breakdown[breakdown.length - 2]
+const latestCost = Math.round(monthTotal(latest) * 100_000) // lakhs -> PKR
+const costChange = round1(((monthTotal(latest) - monthTotal(previous)) / monthTotal(previous)) * 100)
+
+/** Total cost / total kWh across the tariff bands, PKR per kWh. */
+const blendedRate = round2(tariffTotal.cost / tariffTotal.kwh)
+
+const savingsTarget = 440_000
+const monthlySavings = 385_420
+const shortfall = round1(100 - (monthlySavings / savingsTarget) * 100) // 12.4
+
+const kpis: Kpi[] = [
+  {
+    id: "cost",
+    label: "Total Energy Cost",
+    value: latestCost.toLocaleString("en-US"),
+    unit: "PKR",
+    note: `${costChange > 0 ? "+" : ""}${costChange}% vs ${previous.month}`,
+    tone: "neutral",
+  },
+  {
+    id: "rate",
+    label: "Cost per kWh",
+    value: blendedRate.toFixed(2),
+    unit: "PKR",
+    note: "Blended across tariff bands",
+    tone: "neutral",
+  },
+  {
+    id: "savings",
+    label: "Monthly Savings",
+    value: monthlySavings.toLocaleString("en-US"),
+    unit: "PKR",
+    note: `${shortfall}% below PKR ${savingsTarget.toLocaleString("en-US")} target`,
+    tone: "warning",
+  },
+  { id: "budget", label: "Budget Utilization", value: "72.3%", unit: "", note: "", tone: "neutral", progress: 72.3 },
+]
 
 /* ------------------------------ Opportunities ----------------------------- */
 
@@ -229,6 +252,7 @@ export const costSavingsData: CostSavingsData = {
   comparison,
   tariffs,
   tariffTotal,
+  blendedRate,
   opportunities,
   invoices,
 }
@@ -239,6 +263,7 @@ export const emptyCostSavingsData: CostSavingsData = {
   comparison: [],
   tariffs: [],
   tariffTotal: { kwh: 0, cost: 0 },
+  blendedRate: 0,
   opportunities: [],
   invoices: [],
 }

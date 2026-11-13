@@ -1,6 +1,6 @@
 "use client"
 
-import { HandCoinsIcon, PercentIcon, ReceiptTextIcon, TargetIcon, TrendingUpIcon, WalletIcon } from "lucide-react"
+import { HandCoinsIcon, PercentIcon, ReceiptTextIcon, TrendingUpIcon, WalletIcon } from "lucide-react"
 
 import { AppShell } from "@/components/dashboard/app-shell"
 import { KpiRow } from "@/components/dashboard/kpi-row"
@@ -16,7 +16,6 @@ const kpiIcons = {
   cost: WalletIcon,
   rate: TrendingUpIcon,
   savings: HandCoinsIcon,
-  target: TargetIcon,
   budget: PercentIcon,
 }
 
@@ -30,7 +29,6 @@ export function CostSavings({ demo }: { demo: DemoState }) {
         {...state}
         kpis={data.kpis}
         icons={kpiIcons}
-        columns={5}
         empty={{
           icon: <ReceiptTextIcon />,
           title: "No billing data",
@@ -40,7 +38,7 @@ export function CostSavings({ demo }: { demo: DemoState }) {
       />
       <CostChartsRow {...state} data={data} />
       <div className="grid grid-cols-1 gap-2 @5xl:grid-cols-[2fr_1fr]">
-        <TariffPanel {...state} rows={data.tariffs} total={data.tariffTotal} />
+        <TariffPanel {...state} rows={data.tariffs} total={data.tariffTotal} blendedRate={data.blendedRate} />
         <OpportunitiesPanel {...state} opportunities={data.opportunities} />
       </div>
       <BillingPanel {...state} invoices={data.invoices} />

@@ -32,10 +32,7 @@ const tone = {
   success: { note: "text-success-foreground dark:text-success" },
 } as const
 
-const grids = {
-  4: "grid grid-cols-1 gap-2 @md:grid-cols-2 @5xl:grid-cols-4",
-  5: "grid grid-cols-1 gap-2 @md:grid-cols-2 @4xl:grid-cols-3 @6xl:grid-cols-5",
-} as const
+const grid = "grid grid-cols-1 gap-2 @md:grid-cols-2 @5xl:grid-cols-4"
 
 export function KpiRow({
   status,
@@ -43,7 +40,6 @@ export function KpiRow({
   error,
   onRetry,
   icons = dashboardIcons,
-  columns = 4,
   empty = {
     icon: <ZapIcon />,
     title: "No meters connected",
@@ -57,11 +53,8 @@ export function KpiRow({
   onRetry: () => void
   /** Icon per KPI id. */
   icons?: Record<string, LucideIcon>
-  columns?: keyof typeof grids
   empty?: React.ComponentProps<typeof PanelState>["empty"]
 }) {
-  const grid = grids[columns]
-
   return (
     <section aria-label="Key metrics">
       <PanelState
@@ -71,7 +64,7 @@ export function KpiRow({
         onRetry={onRetry}
         skeleton={
           <div className={grid}>
-            {Array.from({ length: columns }).map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i} size="sm">
                 <CardContent className="flex flex-col gap-2">
                   <Skeleton className="h-4 w-24" />

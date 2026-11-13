@@ -11,6 +11,7 @@ import {
   DataGridTableFootRow,
   DataGridTableFootRowCell,
 } from "@/components/reui/data-grid/data-grid-table"
+import { GridFill } from "@/components/dashboard/grid-fill"
 import { Panel } from "@/components/dashboard/panel"
 import { PanelState, type PanelStatus } from "@/components/dashboard/panel-state"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -111,11 +112,13 @@ function TariffGrid({
       recordCount={rows.length}
       isLoading={loading}
       tableLayout={{ headerBackground: true, footerBackground: true, rowBorder: true, width: "auto" }}
-      tableClassNames={{ base: "w-full min-w-[620px] whitespace-nowrap" }}
+      tableClassNames={{ base: "h-full w-full min-w-[620px] whitespace-nowrap" }}
     >
-      <DataGridScrollArea orientation="horizontal">
-        <DataGridTable footerContent={footer} />
-      </DataGridScrollArea>
+      <GridFill>
+        <DataGridScrollArea orientation="horizontal" className="h-full">
+          <DataGridTable footerContent={footer} />
+        </DataGridScrollArea>
+      </GridFill>
     </DataGrid>
   )
 }
@@ -124,19 +127,34 @@ export function TariffPanel({
   status,
   rows,
   total,
+  blendedRate,
   error,
   onRetry,
 }: {
   status: PanelStatus
   rows: TariffRow[]
   total: { kwh: number; cost: number }
+  blendedRate: number
   error?: string
   onRetry: () => void
 }) {
   const isEmpty = rows.length === 0
+  const peakShare = rows.filter((r) => r.type === "peak").reduce((sum, r) => sum + r.share, 0)
 
   return (
-    <Panel title="Tariff Structure & Load Analysis" meta="This month" flush={status !== "error" && (status === "loading" || !isEmpty)}>
+    <Panel
+      title="Tariff Structure & Load Analysis"
+      meta="This month"
+      flush={status !== "error" && (status === "loading" || !isEmpty)}
+      footer={
+        status === "ready" && !isEmpty ? (
+          <>
+            <span className="tabular-nums">Blended rate PKR {blendedRate.toFixed(2)} / kWh</span>
+            <span className="tabular-nums">Peak bands {peakShare.toFixed(1)}% of cost</span>
+          </>
+        ) : undefined
+      }
+    >
       <PanelState
         status={status}
         isEmpty={isEmpty}

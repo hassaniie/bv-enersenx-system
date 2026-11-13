@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatPkr, type DashboardData, type PowerQualityRow } from "@/lib/dashboard-data"
 
+import { GridFill } from "./grid-fill"
 import { Panel } from "./panel"
 import { PanelError, PanelState, type PanelStatus } from "./panel-state"
 
@@ -234,15 +235,16 @@ function PowerQuality({
         <DataGrid
           table={table}
           recordCount={rows.length}
-          className="h-full"
           isLoading={status === "loading"}
           emptyMessage={emptyMessage}
           tableLayout={{ headerBackground: true, rowBorder: true, stripped: true, width: "auto" }}
           tableClassNames={{ base: "h-full w-full min-w-[480px]" }}
         >
-          <DataGridScrollArea className="h-full">
-            <DataGridTable />
-          </DataGridScrollArea>
+          <GridFill>
+            <DataGridScrollArea className="h-full">
+              <DataGridTable />
+            </DataGridScrollArea>
+          </GridFill>
         </DataGrid>
       </FramePanel>
       {status === "ready" && rows.length > 0 && (

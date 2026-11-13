@@ -154,7 +154,7 @@ export function CostChartsRow({ status, data, error, onRetry }: RowProps) {
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis tickLine={false} axisLine={false} domain={[0, 25]} ticks={[0, 5, 10, 15, 20, 25]} />
+              <YAxis tickLine={false} axisLine={false} domain={[0, "auto"]} />
               <ChartTooltip cursor={{ strokeDasharray: "4 4" }} content={<ChartTooltipContent indicator="line" />} />
               <Area
                 dataKey="prev"
