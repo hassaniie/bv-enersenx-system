@@ -7,6 +7,7 @@
 // formula (no randomness), so every render and every build shows the same data.
 // Peak Demand reads the Dashboard's live demand, so the two pages agree.
 
+import { daysFromToday, formatDayMonth, TODAY } from "@/lib/app-date"
 import { dashboardData, demand, type DemoState, type Kpi } from "@/lib/dashboard-data"
 
 export type { DemoState }
@@ -35,10 +36,16 @@ export type AnalyticsData = {
 
 /* ------------------------------- Forecast -------------------------------- */
 
-// Read off the Figma chart, every 2 days from Aug 1 to Aug 23.
-const predicted = [16, 24, 28, 35, 46, 53, 59, 63, 70, 82, 93, 97]
-const actual = [9, 18, 24, 29, 31, 37, 43, 51, 56, 60, 69, 75]
-const forecast: ForecastPoint[] = predicted.map((p, i) => ({ day: `Aug ${1 + i * 2}`, predicted: p, actual: actual[i] }))
+// Daily energy in MWh, every 2 days for the 23 days ending TODAY. The Figma drew
+// a unitless rising curve (9 to 97); these are daily MWh on the Dashboard's scale
+// (58.8 MWh today), with the model a few percent off the actuals.
+const predicted = [53.1, 54.6, 55.9, 56.4, 57.8, 58.2, 59.0, 59.6, 60.4, 61.1, 60.2, 59.4]
+const actual = [52.4, 55.1, 54.0, 57.3, 56.2, 58.9, 57.6, 60.2, 59.1, 61.4, 60.3, 58.8]
+const forecast: ForecastPoint[] = predicted.map((p, i) => ({
+  day: formatDayMonth(daysFromToday((i - (predicted.length - 1)) * 2)),
+  predicted: p,
+  actual: actual[i],
+}))
 
 /* ------------------------------- Insights -------------------------------- */
 
@@ -116,7 +123,7 @@ export function regression(points: TempPoint[]) {
 
 /* ------------------------------ 90-day trend ----------------------------- */
 
-const trendEnd = Date.UTC(2025, 7, 23) // Aug 23, 2025: the forecast's last day
+const trendEnd = Date.parse(`${TODAY}T00:00:00Z`) // the trend ends at TODAY
 const day = 86_400_000
 const rawDaily = Array.from({ length: 90 }, (_, i) => {
   const weekday = new Date(trendEnd - (89 - i) * day).getUTCDay()
@@ -148,7 +155,7 @@ const kpis: Kpi[] = [
     label: "Peak Demand",
     value: peakKw.toLocaleString("en-US"),
     unit: "kW",
-    note: `Today · ${Math.round((peakKw / demand.limitKw) * 100)}% of ${demand.limitKw.toLocaleString("en-US")} kW limit`,
+    note: ["Today", `${Math.round((peakKw / demand.limitKw) * 100)}% of ${demand.limitKw.toLocaleString("en-US")} kW limit`],
     tone: "neutral",
   },
   { id: "carbon", label: "Carbon Footprint", value: "42.8", unit: "t CO₂", note: "-8.3% vs last month", tone: "success" },
@@ -157,7 +164,7 @@ const kpis: Kpi[] = [
     label: "Anomalies Detected",
     value: `${active.length} active`,
     unit: "",
-    note: `${count("critical")} critical · ${count("warning")} warning`,
+    note: [`${count("critical")} critical`, `${count("warning")} warning`],
     tone: count("critical") > 0 ? "destructive" : "neutral",
   },
 ]

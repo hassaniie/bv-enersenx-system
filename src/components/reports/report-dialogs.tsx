@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   formatLabels,
+  reportMonth,
   type Frequency,
   type ReportFormat,
   type ReportTemplate,
@@ -48,6 +49,7 @@ const frequencyOptions: { value: Frequency; label: string }[] = [
   { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },
   { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
 ]
 
 export type GenerateRequest = { template: ReportType; name: string; range: string; format: ReportFormat }
@@ -114,7 +116,7 @@ export function GenerateReportDialog({
   React.useEffect(() => {
     if (!open) return
     setTemplate(initialTemplate)
-    setName(defaultName(templates, initialTemplate, "Aug 2025"))
+    setName(defaultName(templates, initialTemplate, reportMonth))
     setRange(initialRange)
     setFormat(initialFormat)
   }, [open, initialTemplate, initialRange, initialFormat, templates])
@@ -128,7 +130,7 @@ export function GenerateReportDialog({
           className="flex flex-col gap-4"
           onSubmit={(e) => {
             e.preventDefault()
-            onSubmit({ template, name: name.trim() || defaultName(templates, template, "Aug 2025"), range, format })
+            onSubmit({ template, name: name.trim() || defaultName(templates, template, reportMonth), range, format })
           }}
         >
           <DialogHeader>
@@ -143,7 +145,7 @@ export function GenerateReportDialog({
               items={templateItems}
               onChange={(t) => {
                 setTemplate(t)
-                setName(defaultName(templates, t, "Aug 2025"))
+                setName(defaultName(templates, t, reportMonth))
               }}
             />
             <Field>

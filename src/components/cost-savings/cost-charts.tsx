@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { CostBreakdownPoint, CostSavingsData } from "@/lib/cost-savings-data"
+import { chartSpan, type CostBreakdownPoint, type CostSavingsData } from "@/lib/cost-savings-data"
 
 type RowProps = {
   status: PanelStatus
@@ -34,8 +34,8 @@ const breakdownConfig = {
 } satisfies ChartConfig
 
 const comparisonConfig = {
-  prev: { label: "2024 (Prev)", theme: { light: "var(--color-violet-500)", dark: "var(--color-violet-400)" } },
-  current: { label: "2025 (Current)", theme: { light: "var(--color-rose-400)", dark: "var(--color-rose-300)" } },
+  prev: { label: "Prior year", theme: { light: "var(--color-violet-500)", dark: "var(--color-violet-400)" } },
+  current: { label: "Last 12 months", theme: { light: "var(--color-rose-400)", dark: "var(--color-rose-300)" } },
 } satisfies ChartConfig
 
 const sources = ["grid", "genset", "solar", "gas"] as const
@@ -52,7 +52,7 @@ function toQuarters(months: CostBreakdownPoint[]): CostBreakdownPoint[] {
   for (let q = 0; q * 3 < months.length; q++) {
     const slice = months.slice(q * 3, q * 3 + 3)
     quarters.push({
-      month: `Q${q + 1}`,
+      month: `${slice[0].month.slice(0, 3)}–${slice[slice.length - 1].month}`,
       grid: round1(slice.reduce((s, m) => s + m.grid, 0)),
       genset: round1(slice.reduce((s, m) => s + m.genset, 0)),
       solar: round1(slice.reduce((s, m) => s + m.solar, 0)),
@@ -75,7 +75,7 @@ export function CostChartsRow({ status, data, error, onRetry }: RowProps) {
     <div className="grid grid-cols-1 gap-2 @5xl:grid-cols-[1.3fr_1fr]">
       <Panel
         title="Monthly Cost Breakdown"
-        hint="PKR (Lakhs) · 2025 consolidated"
+        hint={["PKR lakhs", chartSpan]}
         meta={
           <Select items={periods} value={period} onValueChange={(v) => v && setPeriod(v)}>
             <SelectTrigger size="sm" aria-label="Breakdown period">
@@ -126,7 +126,7 @@ export function CostChartsRow({ status, data, error, onRetry }: RowProps) {
         </PanelState>
       </Panel>
 
-      <Panel title="Cost Comparison" hint="2025 vs 2024 · PKR millions">
+      <Panel title="Cost Comparison" hint={["Last 12 months vs prior year", "PKR millions"]}>
         <PanelState
           status={status}
           isEmpty={data.comparison.length === 0}

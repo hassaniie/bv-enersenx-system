@@ -15,6 +15,7 @@ import type { Kpi } from "@/lib/dashboard-data"
 import { cn } from "@/lib/utils"
 
 import { PanelState, type PanelStatus } from "./panel-state"
+import { Segments } from "./segments"
 
 const dashboardIcons: Record<string, LucideIcon> = {
   power: ZapIcon,
@@ -95,7 +96,9 @@ export function KpiRow({
                     {kpi.progress !== undefined ? (
                       <Progress value={kpi.progress} aria-label={`${kpi.label} ${kpi.value}`} />
                     ) : (
-                      <span className={cn("truncate text-xs", t.note)}>{kpi.note}</span>
+                      <span className={cn("flex min-w-0 items-center gap-1.5 text-xs", t.note)}>
+                        <Segments parts={kpi.note} />
+                      </span>
                     )}
                   </div>
                   <Icon aria-hidden className="size-4 shrink-0 text-muted-foreground" />

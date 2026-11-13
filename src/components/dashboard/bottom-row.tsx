@@ -89,7 +89,7 @@ export function BottomRow({ status, data, error, onRetry }: RowProps) {
         </PanelState>
       </Panel>
 
-      <Panel title="Energy saving trend" meta="2026" className="@3xl:col-span-2 @7xl:col-span-1">
+      <Panel title="Energy saving trend" meta="Last 7 months" className="@3xl:col-span-2 @7xl:col-span-1">
         <PanelState
           status={status}
           isEmpty={data.savingTrend.trend.length === 0}

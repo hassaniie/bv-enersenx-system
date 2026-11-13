@@ -108,10 +108,12 @@ export function BillingPanel({
   const columns = React.useMemo<ColumnDef<DataGridFeatures, Invoice>[]>(
     () => [
       {
-        accessorKey: "period",
+        // Sorts by the period's start date; the cell shows the readable range.
+        id: "period",
+        accessorFn: (row) => row.periodStart,
         header: ({ column }) => <DataGridColumnHeader title="Billing Period" column={column} />,
+        cell: ({ row }) => row.original.period,
         size: 180,
-        enableSorting: false,
         meta: { skeleton: <Skeleton className="h-4 w-32" /> },
       },
       {

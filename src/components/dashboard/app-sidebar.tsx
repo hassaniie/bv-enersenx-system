@@ -23,11 +23,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Badge } from "@/components/reui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
-import { isCurrent, nav } from "./nav"
+import { isCurrent, nav, type NavItem } from "./nav"
 
 const facilities = [
   { value: "kabirwala", label: "Nestle Kabirwala" },
@@ -41,6 +44,34 @@ export function Logo() {
       EnerSen<span className="text-green-600 dark:text-green-400">X</span>
       <span className="text-xs font-medium text-muted-foreground">TM</span>
     </span>
+  )
+}
+
+/**
+ * A page that doesn't exist yet: a disabled menu button (not a link, not
+ * focusable) with a "Soon" badge. The installed button drops pointer events
+ * when disabled, so the icon-rail tooltip hangs off a wrapper instead.
+ */
+function ComingSoonItem({ item }: { item: NavItem }) {
+  const { state, isMobile } = useSidebar()
+  return (
+    <SidebarMenuItem>
+      <Tooltip>
+        <TooltipTrigger render={<span className="block" />}>
+          <SidebarMenuButton disabled aria-disabled="true" render={<button type="button" />}>
+            <item.icon />
+            <span>{item.title}</span>
+            <Badge variant="outline">Soon</Badge>
+          </SidebarMenuButton>
+        </TooltipTrigger>
+        <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile}>
+          <span className="flex flex-col">
+            <span>{item.title}</span>
+            <span>Coming soon</span>
+          </span>
+        </TooltipContent>
+      </Tooltip>
+    </SidebarMenuItem>
   )
 }
 
@@ -63,6 +94,7 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {nav.map((item) => {
+                  if (!item.href) return <ComingSoonItem key={item.title} item={item} />
                   const active = isCurrent(pathname, item.href)
                   return (
                     <SidebarMenuItem key={item.title}>
@@ -70,7 +102,7 @@ export function AppSidebar() {
                         isActive={active}
                         aria-current={active ? "page" : undefined}
                         tooltip={item.title}
-                        render={item.href ? <Link href={item.href} /> : <a href="#" />}
+                        render={<Link href={item.href} />}
                       >
                         <item.icon />
                         <span>{item.title}</span>

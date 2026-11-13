@@ -15,6 +15,8 @@ import { matchesQuery } from "@/lib/filter-predicate"
 import {
   daysAgo,
   fetchReports,
+  formatLabels,
+  nextRun,
   lastGenerated,
   people,
   referenceDate,
@@ -40,11 +42,6 @@ import { ReportTemplates } from "./report-templates"
 import { ReportsTable } from "./reports-table"
 import { SchedulesPanel } from "./schedules-panel"
 
-const nextRun: Record<Schedule["frequency"], string> = {
-  daily: "Tomorrow, 08:00 AM",
-  weekly: "Monday, 08:00 AM",
-  monthly: "Sep 01, 08:00 AM",
-}
 
 function ToolbarSelect({
   label,
@@ -121,7 +118,7 @@ export function Reports({ demo }: { demo: DemoState }) {
       ...list,
     ])
     setGenerateFor(null)
-    toast.success("Report queued", { description: `${req.name} · ${req.format.toUpperCase()}` })
+    toast.success("Report queued", { description: `${formatLabels[req.format]}, ${req.name}` })
     // Demo only: pretend the reporting service finishes after a moment.
     window.setTimeout(() => {
       setReports((list) => list.map((r) => (r.id === id ? { ...r, status: "completed", sizeMb: 3.4 } : r)))
@@ -131,7 +128,7 @@ export function Reports({ demo }: { demo: DemoState }) {
   const addSchedule = (req: ScheduleRequest) => {
     setSchedules((list) => [
       ...list,
-      { id: `s${list.length + 1}-${req.template}`, name: req.name, frequency: req.frequency, next: nextRun[req.frequency], enabled: true, recipients: [people.hm] },
+      { id: `s${list.length + 1}-${req.template}`, name: req.name, frequency: req.frequency, next: nextRun(req.frequency), enabled: true, recipients: [people.hm] },
     ])
     setScheduleOpen(false)
     toast.success("Schedule added", { description: req.name })

@@ -78,7 +78,7 @@ const forecastConfig = {
 } satisfies ChartConfig
 
 const forecastRanges = [
-  { value: "all", label: "Aug 1–23" },
+  { value: "all", label: "Last 23 days" },
   { value: "10", label: "Last 10 days" },
 ]
 
@@ -89,7 +89,7 @@ export function ForecastPanel({ data, ...state }: StateProps & { data: ForecastP
   return (
     <Panel
       title="Predictive Energy Forecast"
-      hint="Actual vs AI-predicted load"
+      hint="Actual vs AI-predicted load, MWh"
       meta={<PanelSelect label="Forecast range" value={range} onChange={setRange} items={forecastRanges} />}
     >
       <PanelState
@@ -117,7 +117,7 @@ export function ForecastPanel({ data, ...state }: StateProps & { data: ForecastP
             </defs>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} />
-            <YAxis tickLine={false} axisLine={false} domain={[0, 100]} />
+            <YAxis tickLine={false} axisLine={false} domain={[40, 70]} ticks={[40, 50, 60, 70]} />
             <ChartTooltip content={<ChartTooltipContent indicator="line" />} />
             <Area dataKey="predicted" type="monotone" stroke="var(--color-predicted)" fill="url(#fill-predicted)" strokeWidth={2} dot={{ r: 3, fill: "var(--card)", strokeWidth: 1.5 }} />
             <Area dataKey="actual" type="monotone" stroke="var(--color-actual)" fill="url(#fill-actual)" strokeWidth={2} dot={{ r: 3, fill: "var(--card)", strokeWidth: 1.5 }} />
@@ -174,7 +174,8 @@ export function CorrelationPanel({ data, ...state }: StateProps & { data: TempPo
               dataKey="temp"
               name="Temperature"
               unit="°C"
-              domain={["dataMin - 1", "dataMax + 1"]}
+              domain={[15, 40]}
+              ticks={[15, 20, 25, 30, 35, 40]}
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -214,7 +215,7 @@ const fmtDate = (iso: string) => shortDate.format(new Date(`${iso}T00:00:00Z`))
 
 export function TrendPanel({ data, ...state }: StateProps & { data: TrendPoint[] }) {
   return (
-    <Panel title="90-Day Trend & Moving Averages" hint="kWh per day · 7D and 30D baselines">
+    <Panel title="90-Day Trend & Moving Averages" hint={["kWh per day", "7D and 30D baselines"]}>
       <PanelState
         {...state}
         isEmpty={data.length === 0}

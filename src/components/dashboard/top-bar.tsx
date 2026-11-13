@@ -15,6 +15,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 
+import { Badge } from "@/components/reui/badge"
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
 import {
   Breadcrumb,
@@ -114,13 +115,16 @@ export function TopBar() {
               {nav.map((item) => (
                 <CommandItem
                   key={item.title}
+                  disabled={!item.href}
                   onSelect={() => {
+                    if (!item.href) return
                     setOpen(false)
-                    if (item.href) router.push(item.href)
+                    router.push(item.href)
                   }}
                 >
                   <item.icon />
                   {item.title}
+                  {!item.href && <Badge variant="outline">Soon</Badge>}
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import type { Frequency, Schedule } from "@/lib/reports-data"
 
-const frequencyLabels: Record<Frequency, string> = { daily: "Daily", weekly: "Weekly", monthly: "Monthly" }
+const frequencyLabels: Record<Frequency, string> = { daily: "Daily", weekly: "Weekly", monthly: "Monthly", quarterly: "Quarterly" }
 
 export function SchedulesPanel({
   status,

@@ -71,27 +71,29 @@ export function OpportunitiesPanel({
       >
         <ItemGroup>
           {opportunities.map((o) => (
-            <Item
-              key={o.id}
-              variant="outline"
-              size="sm"
-              className="text-start hover:bg-muted dark:hover:bg-muted/50"
-              render={<button type="button" onClick={() => setSelected(o)} />}
-            >
-              <ItemMedia variant="icon">
-                <LightbulbIcon aria-hidden />
-              </ItemMedia>
-              <ItemContent className="min-w-0">
-                <ItemTitle>{o.title}</ItemTitle>
-                <ItemDescription className="tabular-nums">
-                  PKR {formatNumber(o.annualSavings)} est. annual savings
-                </ItemDescription>
-              </ItemContent>
-              <ItemActions>
-                <EffortBadge effort={o.effort} />
-                <ChevronRightIcon aria-hidden className="size-4 text-muted-foreground" />
-              </ItemActions>
-            </Item>
+            // The row is a button, so a wrapper is the list item.
+            <div key={o.id} role="listitem">
+              <Item
+                variant="outline"
+                size="sm"
+                className="text-start hover:bg-muted dark:hover:bg-muted/50"
+                render={<button type="button" onClick={() => setSelected(o)} />}
+              >
+                <ItemMedia variant="icon">
+                  <LightbulbIcon aria-hidden />
+                </ItemMedia>
+                <ItemContent className="min-w-0">
+                  <ItemTitle>{o.title}</ItemTitle>
+                  <ItemDescription className="tabular-nums">
+                    PKR {formatNumber(o.annualSavings)} est. annual savings
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <EffortBadge effort={o.effort} />
+                  <ChevronRightIcon aria-hidden className="size-4 text-muted-foreground" />
+                </ItemActions>
+              </Item>
+            </div>
           ))}
         </ItemGroup>
       </PanelState>

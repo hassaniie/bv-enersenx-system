@@ -1,10 +1,12 @@
 import { Frame, FrameFooter, FrameHeader, FramePanel, FrameTitle } from "@/components/reui/frame"
 import { cn } from "@/lib/utils"
 
+import { Segments } from "./segments"
+
 type PanelProps = {
   title: string
-  /** Small context after the title, e.g. the unit. */
-  hint?: string
+  /** Small context after the title, e.g. the unit; several parts render with a dot between. */
+  hint?: string | string[]
   /** Right side of the header: a period label or an action. */
   meta?: React.ReactNode
   /** A summary line under the panel, e.g. a data-grid summary. */
@@ -23,7 +25,11 @@ export function Panel({ title, hint, meta, footer, flush, className, panelClassN
       <FrameHeader className="flex-row flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
           <FrameTitle className="truncate">{title}</FrameTitle>
-          {hint && <span className="truncate text-xs text-muted-foreground">{hint}</span>}
+          {hint && (
+            <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+              <Segments parts={hint} />
+            </span>
+          )}
         </div>
         {meta && <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">{meta}</div>}
       </FrameHeader>

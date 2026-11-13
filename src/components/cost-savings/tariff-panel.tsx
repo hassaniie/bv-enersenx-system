@@ -15,7 +15,7 @@ import { GridFill } from "@/components/dashboard/grid-fill"
 import { Panel } from "@/components/dashboard/panel"
 import { PanelState, type PanelStatus } from "@/components/dashboard/panel-state"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { TariffRow } from "@/lib/cost-savings-data"
+import { tariffMonth, type TariffRow } from "@/lib/cost-savings-data"
 import { formatNumber } from "@/lib/dashboard-data"
 
 import { TariffTypeBadge } from "./status-badges"
@@ -144,7 +144,7 @@ export function TariffPanel({
   return (
     <Panel
       title="Tariff Structure & Load Analysis"
-      meta="This month"
+      meta={tariffMonth}
       flush={status !== "error" && (status === "loading" || !isEmpty)}
       footer={
         status === "ready" && !isEmpty ? (

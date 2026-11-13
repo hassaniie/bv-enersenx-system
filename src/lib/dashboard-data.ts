@@ -1,12 +1,17 @@
 // Sample data taken from the Figma "Dashboard" frame. Replace `fetchDashboard`
 // with your real API call; every panel already handles loading, empty and error.
+// Chart months come from the shared TODAY (src/lib/app-date.ts): they end at the
+// latest complete month.
+
+import { completeMonths, formatMonthTick } from "@/lib/app-date"
 
 export type Kpi = {
   id: string
   label: string
   value: string
   unit: string
-  note: string
+  /** Several parts render with a dot between. */
+  note: string | string[]
   tone: "neutral" | "info" | "warning" | "destructive" | "success"
   /** 0–100: draws a progress bar in place of the note. */
   progress?: number
@@ -60,6 +65,9 @@ export type DashboardData = {
 /** Live demand and the facility's demand limit, kW. Analytics reads these too. */
 export const demand = { currentKw: 2_890, limitKw: 3_900 }
 
+const months6 = completeMonths(6).map(formatMonthTick)
+const months7 = completeMonths(7).map(formatMonthTick)
+
 export const dashboardData: DashboardData = {
   kpis: [
     { id: "power", label: "Total Power", value: "2.54", unit: "MW", note: "Live consumption", tone: "neutral" },
@@ -91,12 +99,12 @@ export const dashboardData: DashboardData = {
   ],
   peakKw: 2100,
   costComparison: [
-    { month: "Jan ’26", baseline: 79, actual: 60 },
-    { month: "Feb ’26", baseline: 85, actual: 51 },
-    { month: "Mar ’26", baseline: 62, actual: 50 },
-    { month: "Apr ’26", baseline: 88, actual: 69 },
-    { month: "May ’26", baseline: 69, actual: 50 },
-    { month: "Jun ’26", baseline: 62, actual: 50 },
+    { month: months6[0], baseline: 79, actual: 60 },
+    { month: months6[1], baseline: 85, actual: 51 },
+    { month: months6[2], baseline: 62, actual: 50 },
+    { month: months6[3], baseline: 88, actual: 69 },
+    { month: months6[4], baseline: 69, actual: 50 },
+    { month: months6[5], baseline: 62, actual: 50 },
   ],
   savings: {
     percent: 16.5,
@@ -142,24 +150,24 @@ export const dashboardData: DashboardData = {
     lastMonth: 0.465,
     improvement: 15.2,
     trend: [
-      { month: "Jan ’26", value: 63 },
-      { month: "Feb ’26", value: 58 },
-      { month: "Mar ’26", value: 62 },
-      { month: "Apr ’26", value: 59 },
-      { month: "May ’26", value: 61 },
-      { month: "Jun ’26", value: 58 },
+      { month: months6[0], value: 63 },
+      { month: months6[1], value: 58 },
+      { month: months6[2], value: 62 },
+      { month: months6[3], value: 59 },
+      { month: months6[4], value: 61 },
+      { month: months6[5], value: 58 },
     ],
   },
   savingTrend: {
     total: 20_865_420,
     trend: [
-      { month: "Jan ’26", value: 6.2 },
-      { month: "Feb ’26", value: 9.2 },
-      { month: "Mar ’26", value: 11.2 },
-      { month: "Apr ’26", value: 13.2 },
-      { month: "May ’26", value: 16.5 },
-      { month: "Jun ’26", value: 19.4 },
-      { month: "Jul ’26", value: 20.9 },
+      { month: months7[0], value: 6.2 },
+      { month: months7[1], value: 9.2 },
+      { month: months7[2], value: 11.2 },
+      { month: months7[3], value: 13.2 },
+      { month: months7[4], value: 16.5 },
+      { month: months7[5], value: 19.4 },
+      { month: months7[6], value: 20.9 },
     ],
   },
 }
