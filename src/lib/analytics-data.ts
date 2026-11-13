@@ -5,8 +5,9 @@
 // the triage list, the regression line and R² from the scatter points, and the
 // 7- and 30-day averages from the daily series. Generated series use a fixed
 // formula (no randomness), so every render and every build shows the same data.
+// Peak Demand reads the Dashboard's live demand, so the two pages agree.
 
-import type { DemoState, Kpi } from "@/lib/dashboard-data"
+import { dashboardData, demand, type DemoState, type Kpi } from "@/lib/dashboard-data"
 
 export type { DemoState }
 
@@ -134,12 +135,22 @@ const trend: TrendPoint[] = rawDaily.map((raw, i) => ({
 
 /* --------------------------------- KPIs ---------------------------------- */
 
+// Today's peak can't be below the Dashboard's live demand or today's load curve.
+const peakKw = Math.max(demand.currentKw, ...dashboardData.loadCurve.map((p) => p.today))
+
 const active = anomalies.filter((a) => a.status !== "resolved")
 const count = (s: Severity) => active.filter((a) => a.severity === s).length
 
 const kpis: Kpi[] = [
   { id: "efficiency", label: "Energy Efficiency Index", value: "0.89", unit: "avg", note: "Target reached", tone: "success" },
-  { id: "peak", label: "Peak Demand", value: "1,245", unit: "kW", note: "Today at 14:30", tone: "neutral" },
+  {
+    id: "peak",
+    label: "Peak Demand",
+    value: peakKw.toLocaleString("en-US"),
+    unit: "kW",
+    note: `Today · ${Math.round((peakKw / demand.limitKw) * 100)}% of ${demand.limitKw.toLocaleString("en-US")} kW limit`,
+    tone: "neutral",
+  },
   { id: "carbon", label: "Carbon Footprint", value: "42.8", unit: "t CO₂", note: "-8.3% vs last month", tone: "success" },
   {
     id: "anomalies",

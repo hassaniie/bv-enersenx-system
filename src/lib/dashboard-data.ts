@@ -57,12 +57,22 @@ export type DashboardData = {
   savingTrend: { total: number; trend: MonthValue[] }
 }
 
+/** Live demand and the facility's demand limit, kW. Analytics reads these too. */
+export const demand = { currentKw: 2_890, limitKw: 3_900 }
+
 export const dashboardData: DashboardData = {
   kpis: [
     { id: "power", label: "Total Power", value: "2.54", unit: "MW", note: "Live consumption", tone: "neutral" },
     { id: "energy", label: "Daily Energy", value: "58,765", unit: "kWh", note: "Today’s consumption", tone: "info" },
     { id: "cost", label: "Daily Cost", value: "1.52M", unit: "PKR", note: "Today’s total cost", tone: "warning" },
-    { id: "demand", label: "Current Demand", value: "2,890", unit: "kW", note: "From 3,900 kW", tone: "destructive" },
+    {
+      id: "demand",
+      label: "Current Demand",
+      value: demand.currentKw.toLocaleString("en-US"),
+      unit: "kW",
+      note: `From ${demand.limitKw.toLocaleString("en-US")} kW`,
+      tone: "destructive",
+    },
   ],
   loadCurve: [
     { time: "12 AM", yesterday: 1100, today: 1780 },
