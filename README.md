@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EnerSenX — Energy Monitoring Dashboard
 
-## Getting Started
+The main Dashboard screen from the Figma file, built with Next.js, shadcn/ui (`base-nova`) and the free ReUI components.
 
-First, run the development server:
+## Run it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Preview the data states
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Every panel has its own loading, empty and error state. Add `?state=` to the URL:
 
-## Learn More
+- `/?state=loading`: skeletons
+- `/?state=empty`: empty states with an action
+- `/?state=error`: inline errors with Retry
 
-To learn more about Next.js, take a look at the following resources:
+## Where things are
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `src/lib/dashboard-data.ts`: sample data from the Figma. Replace `fetchDashboard` with your API call.
+- `src/components/dashboard/`: the screen (sidebar, top bar, KPI row and three rows of panels).
+- `src/components/reui/`: ReUI components (frame, badge, icon-tile, alert, data-grid).
+- `src/components/ui/`: shadcn/ui components.
+- `src/app/globals.css`: theme tokens, mapped from the Figma colors.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ReUI with Claude Code
 
-## Deploy on Vercel
+The ReUI skill is in `.claude/skills/reui` and the MCP server is in `.mcp.json`. In Claude Code, run `/mcp`, choose `reui` and sign in (a free account works).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy (GitHub Pages)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Every push to `main` builds a static export and publishes it with `.github/workflows/deploy.yml`.
+
+One-time setup: on GitHub, open the repo's **Settings → Pages** and set **Source** to **GitHub Actions**.
+
+The site is served at `https://<your-username>.github.io/<repo-name>/`. The workflow sets `NEXT_PUBLIC_BASE_PATH` to the repo name, so asset paths resolve under that sub-path.
