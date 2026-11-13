@@ -4,14 +4,10 @@ import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 
 import { Dashboard } from "@/components/dashboard/dashboard"
-import type { DemoState } from "@/lib/dashboard-data"
-
-const states: DemoState[] = ["ready", "loading", "empty", "error"]
+import { parseDemoState } from "@/lib/use-demo-query"
 
 function DashboardFromUrl() {
-  const state = useSearchParams().get("state")
-  const demo = states.includes(state as DemoState) ? (state as DemoState) : "ready"
-  return <Dashboard demo={demo} />
+  return <Dashboard demo={parseDemoState(useSearchParams().get("state"))} />
 }
 
 // Reads ?state= in the browser, so the page also works as a static export (GitHub Pages).

@@ -1,20 +1,8 @@
 "use client"
 
-import {
-  ActivityIcon,
-  BellIcon,
-  ChartColumnIcon,
-  ChartPieIcon,
-  CoinsIcon,
-  CpuIcon,
-  FileTextIcon,
-  LayoutDashboardIcon,
-  LightbulbIcon,
-  PlugZapIcon,
-  RefreshCwIcon,
-  SettingsIcon,
-  UsersIcon,
-} from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { RefreshCwIcon } from "lucide-react"
 
 import {
   Select,
@@ -39,20 +27,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
-const nav = [
-  { title: "Dashboard", icon: LayoutDashboardIcon, href: "#", active: true },
-  { title: "Energy Overview", icon: LightbulbIcon, href: "#" },
-  { title: "Cost & Savings", icon: CoinsIcon, href: "#" },
-  { title: "Load Analysis", icon: ChartColumnIcon, href: "#" },
-  { title: "Equipment Monitoring", icon: CpuIcon, href: "#" },
-  { title: "Utility Monitoring", icon: PlugZapIcon, href: "#" },
-  { title: "Power Quality", icon: ActivityIcon, href: "#" },
-  { title: "Alarms & Alerts", icon: BellIcon, href: "#" },
-  { title: "Reports", icon: FileTextIcon, href: "#" },
-  { title: "Analytics", icon: ChartPieIcon, href: "#" },
-  { title: "Settings", icon: SettingsIcon, href: "#" },
-  { title: "User Management", icon: UsersIcon, href: "#" },
-]
+import { isCurrent, nav } from "./nav"
 
 const facilities = [
   { value: "kabirwala", label: "Nestle Kabirwala" },
@@ -70,6 +45,8 @@ export function Logo() {
 }
 
 export function AppSidebar() {
+  const pathname = usePathname()
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-13 flex-row items-center justify-between border-b px-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
@@ -81,26 +58,29 @@ export function AppSidebar() {
 
       <SidebarContent>
         <nav aria-label="Primary">
-        <SidebarGroup>
-          <SidebarGroupLabel>Energy Monitoring System</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {nav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    isActive={item.active}
-                    aria-current={item.active ? "page" : undefined}
-                    tooltip={item.title}
-                    render={<a href={item.href} />}
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Energy Monitoring System</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {nav.map((item) => {
+                  const active = isCurrent(pathname, item.href)
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        isActive={active}
+                        aria-current={active ? "page" : undefined}
+                        tooltip={item.title}
+                        render={item.href ? <Link href={item.href} /> : <a href="#" />}
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </nav>
       </SidebarContent>
 

@@ -8,6 +8,8 @@ export type Kpi = {
   unit: string
   note: string
   tone: "neutral" | "info" | "warning" | "destructive" | "success"
+  /** 0–100: draws a progress bar in place of the note. */
+  progress?: number
 }
 
 export type LoadPoint = { time: string; yesterday: number; today: number }

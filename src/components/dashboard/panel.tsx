@@ -7,23 +7,25 @@ type PanelProps = {
   hint?: string
   /** Right side of the header: a period label or an action. */
   meta?: React.ReactNode
+  /** Drop the panel padding so a data-grid can sit flush (ReUI's one `p-0` exception). */
+  flush?: boolean
   className?: string
   panelClassName?: string
   children: React.ReactNode
 }
 
 /** One dashboard panel: a ReUI Frame with a header bar and a single content panel. */
-export function Panel({ title, hint, meta, className, panelClassName, children }: PanelProps) {
+export function Panel({ title, hint, meta, flush, className, panelClassName, children }: PanelProps) {
   return (
     <Frame spacing="default" className={cn("min-w-0", className)}>
-      <FrameHeader className="flex-row items-center justify-between gap-2">
-        <div className="flex min-w-0 items-baseline gap-1.5">
+      <FrameHeader className="flex-row flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
           <FrameTitle className="truncate">{title}</FrameTitle>
           {hint && <span className="truncate text-xs text-muted-foreground">{hint}</span>}
         </div>
-        {meta && <div className="shrink-0 text-xs text-muted-foreground">{meta}</div>}
+        {meta && <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">{meta}</div>}
       </FrameHeader>
-      <FramePanel className={cn("flex flex-col gap-4", panelClassName)}>{children}</FramePanel>
+      <FramePanel className={cn(flush ? "p-0" : "flex flex-col gap-4", panelClassName)}>{children}</FramePanel>
     </Frame>
   )
 }

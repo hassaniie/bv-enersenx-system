@@ -11,6 +11,8 @@ import {
   SunIcon,
   UserIcon,
 } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
@@ -43,21 +45,11 @@ import { Kbd } from "@/components/ui/kbd"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-const pages = [
-  "Dashboard",
-  "Energy Overview",
-  "Cost & Savings",
-  "Load Analysis",
-  "Equipment Monitoring",
-  "Utility Monitoring",
-  "Power Quality",
-  "Alarms & Alerts",
-  "Reports",
-  "Analytics",
-]
+import { nav } from "./nav"
 
 export function TopBar() {
   const [open, setOpen] = React.useState(false)
+  const router = useRouter()
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -119,9 +111,16 @@ export function TopBar() {
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Pages">
-              {pages.map((p) => (
-                <CommandItem key={p} onSelect={() => setOpen(false)}>
-                  {p}
+              {nav.map((item) => (
+                <CommandItem
+                  key={item.title}
+                  onSelect={() => {
+                    setOpen(false)
+                    if (item.href) router.push(item.href)
+                  }}
+                >
+                  <item.icon />
+                  {item.title}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -132,7 +131,7 @@ export function TopBar() {
   )
 }
 
-export function PageHeader() {
+export function PageHeader({ title }: { title: string }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
@@ -142,11 +141,11 @@ export function PageHeader() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden sm:inline-flex">
-            <BreadcrumbLink href="#">Energy Monitoring System</BreadcrumbLink>
+            <BreadcrumbLink render={<Link href="/" />}>Energy Monitoring System</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden sm:inline-flex" />
           <BreadcrumbItem>
-            <BreadcrumbPage className="text-primary">Dashboard</BreadcrumbPage>
+            <BreadcrumbPage>{title}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
