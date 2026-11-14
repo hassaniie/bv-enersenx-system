@@ -25,6 +25,8 @@ import { BillingPanel } from "./billing-panel"
 import { OpportunitiesPanel } from "./opportunities-panel"
 import { TariffPanel } from "./tariff-panel"
 
+const billLink = (row: { id: string }) => `/bills/view/?id=${encodeURIComponent(row.id)}`
+
 const kpiIcons = { cost: WalletIcon, rate: TrendingUpIcon, savings: HandCoinsIcon, budget: PercentIcon }
 
 // Categorical identity colors for bill components, paired for dark mode.
@@ -139,7 +141,7 @@ export function BillCostSavings({ site }: { site: Site }) {
         <OpportunitiesPanel {...state} opportunities={d?.opportunities ?? []} />
       </div>
 
-      <BillingPanel {...state} title="Bill History" meterLabel="Reference" invoices={d?.invoices ?? []} onEmptyAction={upload} />
+      <BillingPanel {...state} title="Bill History" meterLabel="Reference" invoices={d?.invoices ?? []} onEmptyAction={upload} rowHref={billLink} />
       <BudgetDialog
         open={budgetOpen}
         onOpenChange={setBudgetOpen}

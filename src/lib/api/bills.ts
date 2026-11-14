@@ -122,3 +122,71 @@ export async function getSiteSummary(siteId: string): Promise<SiteSummary> {
   const history = [...bills].reverse().map((b) => ({ month: b.month, amount: b.amountPayable }))
   return { latest, check: latest ? recalculate(latest) : null, billCount: bills.length, history, budget }
 }
+
+export type BillCheckStatus = "overcharged" | "avoidable" | "ok"
+
+export type BillRow = {
+  id: string
+  month: string
+  referenceNo: string
+  kwh: number
+  mdiKw: number
+  powerFactor: number
+  billed: number
+  /** Our recalculation (tariff, no billing errors). */
+  expected: number
+  /** Billing errors plus avoidable charges, PKR. */
+  found: number
+  status: BillCheckStatus
+}
+
+function checkStatus(r: Recalculation): BillCheckStatus {
+  if (r.findings.some((f) => f.kind === "billing_error")) return "overcharged"
+  if (r.findings.some((f) => f.kind === "avoidable")) return "avoidable"
+  return "ok"
+}
+
+/** Every confirmed bill of a site with its check result, newest first. */
+export async function listBillRows(siteId: string): Promise<BillRow[]> {
+  await latency(350)
+  return listBillsNow(siteId).map((b) => {
+    const r = recalculate(b)
+    return {
+      id: b.id,
+      month: b.month,
+      referenceNo: b.referenceNo,
+      kwh: b.peakKwh + b.offPeakKwh,
+      mdiKw: b.mdiKw,
+      powerFactor: b.powerFactor,
+      billed: b.amountPayable,
+      expected: r.expectedTotal,
+      found: r.findings.filter((f) => f.kind !== "opportunity").reduce((s, f) => s + f.impactPkr, 0),
+      status: checkStatus(r),
+    }
+  })
+}
+
+export type BillDetail = {
+  bill: Bill
+  check: Recalculation
+  status: BillCheckStatus
+  siteName: string
+  /** Neighbouring months of the same site, for previous / next. */
+  previousId?: string
+  nextId?: string
+}
+
+export async function getBillDetail(billId: string): Promise<BillDetail> {
+  const bill = await getBill(billId)
+  const siblings = listBillsNow(bill.siteId) // newest first
+  const i = siblings.findIndex((b) => b.id === bill.id)
+  const check = recalculate(bill)
+  return {
+    bill,
+    check,
+    status: checkStatus(check),
+    siteName: read().sites.find((s) => s.id === bill.siteId)?.name ?? "",
+    previousId: siblings[i + 1]?.id,
+    nextId: i > 0 ? siblings[i - 1]?.id : undefined,
+  }
+}

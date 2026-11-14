@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getChecklist, getSiteSummary, recoverable, TREND_MIN_BILLS, useApiQuery, type ChecklistItem, type Site } from "@/lib/api"
 import type { Kpi } from "@/lib/dashboard-data"
 import { formatDayMonth } from "@/lib/app-date"
-import { formatBillMonth, formatBillMonthLong, formatInt, formatPkr, formatPkrShort } from "@/lib/format"
+import { formatBillMonth, formatBillMonthLong, formatInt, formatPkrShort } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { BudgetDialog } from "./budget-dialog"
@@ -181,7 +181,11 @@ export function GettingStarted({ site }: { site: Site }) {
         <Panel
           title="What we found"
           hint={[formatBillMonthLong(latest.month), `${formatPkrShort(found)} recoverable`]}
-          meta={<span className="tabular-nums">Billed {formatPkr(latest.amountPayable)}</span>}
+          meta={
+            <Button size="sm" variant="outline" nativeButton={false} render={<Link href={`/bills/view/?id=${encodeURIComponent(latest.id)}`} />}>
+              View bill
+            </Button>
+          }
         >
           <PanelState
             status={summary.status}

@@ -9,6 +9,7 @@ import {
   LayoutDashboardIcon,
   LightbulbIcon,
   PlugZapIcon,
+  ReceiptTextIcon,
   SettingsIcon,
   UsersIcon,
   type LucideIcon,
@@ -19,6 +20,7 @@ export type NavItem = { title: string; icon: LucideIcon; href?: string }
 /** Primary navigation. Items without an `href` have no page yet. */
 export const nav: NavItem[] = [
   { title: "Dashboard", icon: LayoutDashboardIcon, href: "/" },
+  { title: "Bills", icon: ReceiptTextIcon, href: "/bills/" },
   { title: "Energy Overview", icon: LightbulbIcon },
   { title: "Cost & Savings", icon: CoinsIcon, href: "/cost-savings/" },
   { title: "Load Analysis", icon: ChartColumnIcon },
@@ -36,5 +38,6 @@ export const nav: NavItem[] = [
 export function isCurrent(pathname: string, href?: string) {
   if (!href) return false
   const clean = (p: string) => p.replace(/\/+$/, "") || "/"
-  return clean(pathname) === clean(href)
+  // A bill's detail page belongs to Bills.
+  return clean(pathname) === clean(href) || (clean(href) !== "/" && clean(pathname).startsWith(`${clean(href)}/`))
 }

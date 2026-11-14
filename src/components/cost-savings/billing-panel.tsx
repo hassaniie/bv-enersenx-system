@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { CalendarIcon, CircleDotIcon, DownloadIcon, MapPinIcon, ReceiptTextIcon } from "lucide-react"
 import { useTable, type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
@@ -63,6 +64,7 @@ export function BillingPanel({
   title = "Detailed Billing & Invoices",
   meterLabel = "Meter ID",
   onEmptyAction,
+  rowHref,
 }: {
   status: PanelStatus
   invoices: Invoice[]
@@ -72,6 +74,8 @@ export function BillingPanel({
   /** Column title for `meterId`: a meter, or a bill's reference number. */
   meterLabel?: string
   onEmptyAction?: () => void
+  /** Makes the billing period a link, e.g. to the bill's detail page. */
+  rowHref?: (row: Invoice) => string
 }) {
   const [query, setQuery] = React.useState<FilterQuery>(() => createFilterQuery())
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 8 })
@@ -119,7 +123,14 @@ export function BillingPanel({
         id: "period",
         accessorFn: (row) => row.periodStart,
         header: ({ column }) => <DataGridColumnHeader title="Billing Period" column={column} />,
-        cell: ({ row }) => row.original.period,
+        cell: ({ row }) =>
+          rowHref ? (
+            <Link href={rowHref(row.original)} className="font-medium text-foreground underline-offset-4 hover:underline">
+              {row.original.period}
+            </Link>
+          ) : (
+            row.original.period
+          ),
         size: 180,
         meta: { skeleton: <Skeleton className="h-4 w-32" /> },
       },
@@ -180,7 +191,7 @@ export function BillingPanel({
         meta: { skeleton: <Skeleton className="h-5 w-14" /> },
       },
     ],
-    [meterLabel]
+    [meterLabel, rowHref]
   )
 
   const table = useTable({
