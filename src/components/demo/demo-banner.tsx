@@ -68,7 +68,7 @@ export function DemoBanner() {
                 }}
               >
                 {scenarios.map((s) => (
-                  <DropdownMenuRadioItem key={s.value} value={s.value}>
+                  <DropdownMenuRadioItem key={s.value} value={s.value} closeOnClick>
                     <span className="flex flex-col gap-0.5">
                       <span>{s.label}</span>
                       <span className="text-xs text-muted-foreground">{s.detail}</span>

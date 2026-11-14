@@ -27,7 +27,7 @@ export function BillAnalytics({ site }: { site: Site }) {
   const state = { status: q.status, error: q.error, onRetry: q.retry }
   const d = q.data
   const count = d?.billCount ?? 0
-  const upload = () => router.push("/onboarding/")
+  const upload = () => router.push("/bills/upload/")
   const needMore = {
     title: "Not enough months yet",
     description: `Trends need ${TREND_MIN_BILLS} months of bills. You have ${count}.`,

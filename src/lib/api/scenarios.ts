@@ -9,13 +9,14 @@ import { read, seed, write } from "./store"
 import { actionTitles } from "./actions"
 import type { Bill, SavingsAction, Site } from "./types"
 
-export type Scenario = "sample" | "bills-1" | "bills-3" | "bills-12"
+export type Scenario = "sample" | "bills-1" | "bills-3" | "bills-12" | "cycle"
 
 export const scenarios: { value: Scenario; label: string; detail: string }[] = [
   { value: "sample", label: "Sample organisation", detail: "The original demo: full year, live meters" },
   { value: "bills-1", label: "New site, 1 bill", detail: "Rehmat Textiles right after sign-up" },
   { value: "bills-3", label: "New site, 3 bills", detail: "A few months uploaded" },
   { value: "bills-12", label: "New site, 12 bills", detail: "A full year of bills, budget set" },
+  { value: "cycle", label: "Monthly cycle: January bill due", detail: "11 bills; the January bill is waiting" },
 ]
 
 const ORG = "o-rehmat"
@@ -57,9 +58,24 @@ function rehmat(bills: number) {
 }
 
 /** A year in: a capacitor bank that worked, and a peak-shift that didn't (yet). */
-function seededActions(): SavingsAction[] {
+function seededActions(cycle = false): SavingsAction[] {
   const base = { orgId: ORG, siteId: SITE, suggestedAt: "2025-09-19" }
+  const strn: SavingsAction = {
+    ...base,
+    id: "act-further",
+    kind: "further",
+    title: actionTitles.further,
+    detail: "If you hold an STRN, send it to FESCO to stop the charge.",
+    estMonthlyPkr: 170_000,
+    status: "done",
+    owner: { name: "Sana Rehman", initials: "SR" },
+    dueDate: "2025-12-15",
+    acceptedAt: "2025-12-02",
+    doneAt: "2025-12-10",
+    note: "STRN certificate submitted at the FESCO customer centre, Faisalabad.",
+  }
   return [
+    ...(cycle ? [strn] : []),
     {
       ...base,
       id: "act-pf",
@@ -97,8 +113,12 @@ export async function loadScenario(s: Scenario) {
     write((d) => ({ ...seed(), users: d.users, orgs: d.orgs, memberships: d.memberships, sites: d.sites, bills: d.bills, invites: d.invites, budgets: d.budgets, session: seed().session }))
     return
   }
-  const n = Number(s.split("-")[1])
-  const { site, list } = rehmat(n)
+  const cycle = s === "cycle"
+  const n = cycle ? 12 : Number(s.split("-")[1])
+  const built = rehmat(n)
+  const site = built.site
+  // The monthly cycle starts with the latest month still to upload.
+  const list = cycle ? built.list.slice(0, -1) : built.list
   write((d) => {
     const base = {
       ...d,
@@ -117,7 +137,8 @@ export async function loadScenario(s: Scenario) {
         ...(n >= 12 ? [{ id: "inv-bilal", orgId: ORG, email: "bilal.ahmed@rehmattextiles.pk", role: "manager" as const, invitedAt: TODAY }] : []),
       ],
       budgets: [...d.budgets.filter((b) => b.siteId !== SITE), ...(n >= 12 ? [{ siteId: SITE, monthlyPkr: 6_500_000 }] : [])],
-      actions: [...(d.actions ?? []).filter((a) => a.orgId !== ORG), ...(n >= 12 ? seededActions() : [])],
+      actions: [...(d.actions ?? []).filter((a) => a.orgId !== ORG), ...(n >= 12 ? seededActions(cycle) : [])],
+      alertStates: (d.alertStates ?? []).filter((a) => !a.id.includes(SITE)),
     }
     return { ...base, session: { userId: USER, orgId: ORG, siteId: SITE } }
   })
@@ -129,5 +150,6 @@ export function currentScenario(): Scenario | null {
   if (db.session?.orgId === "o-sample") return "sample"
   if (db.session?.orgId !== ORG) return null
   const n = db.bills.filter((b) => b.siteId === SITE && b.status === "confirmed").length
+  if (n === 11 && (db.actions ?? []).some((a) => a.id === "act-further")) return "cycle"
   return n === 1 ? "bills-1" : n === 3 ? "bills-3" : n === 12 ? "bills-12" : null
 }

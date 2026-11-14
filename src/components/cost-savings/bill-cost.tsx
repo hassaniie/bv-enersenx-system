@@ -53,7 +53,7 @@ export function BillCostSavings({ site }: { site: Site }) {
   const state = { status: q.status, error: q.error, onRetry: q.retry }
   const d = q.data
   const count = d?.billCount ?? 0
-  const upload = () => router.push("/onboarding/")
+  const upload = () => router.push("/bills/upload/")
   const shortHistory = count < TREND_MIN_BILLS
   const [budgetOpen, setBudgetOpen] = React.useState(false)
 

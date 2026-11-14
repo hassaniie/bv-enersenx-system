@@ -108,7 +108,7 @@ function derive(siteId: string): Alert[] {
       siteId,
       kind: "missing_bill",
       severity: "warning",
-      title: `${formatBillMonthLong(expected.start)} bill not uploaded`,
+      title: `${formatBillMonthLong(expectedMonth)} bill not uploaded`,
       detail: `${site.disco} issued this month’s bills around ${formatDayMonth(`${expectedMonth}-19`)}. Without it, budget and savings tracking stop.`,
       impactPkr: 0,
       month: expectedMonth,

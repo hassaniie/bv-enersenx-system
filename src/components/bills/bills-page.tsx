@@ -177,7 +177,7 @@ function BillsGrid({ rows: all, status, error, onRetry }: { rows: BillRow[]; sta
             <FrameTitle>Bill History</FrameTitle>
             <span className="text-xs text-muted-foreground">Every bill, checked against the tariff.</span>
           </div>
-          <Button size="sm" onClick={() => router.push("/onboarding/")}>
+          <Button size="sm" onClick={() => router.push("/bills/upload/")}>
             <UploadIcon data-icon="inline-start" />
             Upload bill
           </Button>
@@ -213,7 +213,7 @@ function BillsGrid({ rows: all, status, error, onRetry }: { rows: BillRow[]; sta
                 title: "No bills yet",
                 description: "Upload your latest bill; we check it against the tariff in seconds.",
                 action: "Upload a bill",
-                onAction: () => router.push("/onboarding/"),
+                onAction: () => router.push("/bills/upload/"),
               }}
             >
               {null}
@@ -254,7 +254,7 @@ function SiteBills({ site }: { site: Site }) {
         error={q.error}
         onRetry={q.retry}
         icons={kpiIcons}
-        empty={{ icon: <ReceiptTextIcon />, title: "No bills yet", description: "Bills you upload are listed and checked here.", action: "Upload a bill", onAction: () => router.push("/onboarding/") }}
+        empty={{ icon: <ReceiptTextIcon />, title: "No bills yet", description: "Bills you upload are listed and checked here.", action: "Upload a bill", onAction: () => router.push("/bills/upload/") }}
       />
       <BillsGrid rows={rows} status={q.status} error={q.error} onRetry={q.retry} />
     </>

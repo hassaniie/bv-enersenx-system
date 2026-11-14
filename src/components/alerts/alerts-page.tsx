@@ -366,7 +366,7 @@ function SiteAlerts({ site }: { site: Site }) {
                   {canEdit && a.status !== "resolved" && (
                     <ItemActions className="w-full flex-wrap justify-end sm:w-auto">
                       {a.kind === "missing_bill" ? (
-                        <Button size="sm" onClick={() => router.push("/onboarding/")}>
+                        <Button size="sm" onClick={() => router.push("/bills/upload/")}>
                           Upload bill
                         </Button>
                       ) : a.actionKind ? (

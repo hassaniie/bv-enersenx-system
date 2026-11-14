@@ -221,7 +221,7 @@ function SiteActions({ site }: { site: Site }) {
       : []
 
   const state = { status: q.status as PanelStatus, error: q.error, onRetry: q.retry }
-  const upload = () => router.push("/onboarding/")
+  const upload = () => router.push("/bills/upload/")
 
   return (
     <>

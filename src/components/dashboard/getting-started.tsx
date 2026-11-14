@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import { BudgetDialog } from "./budget-dialog"
 import { InviteDialog } from "./invite-dialog"
 import { KpiRow } from "./kpi-row"
+import { NextBillNotice } from "./next-bill"
 import { Panel } from "./panel"
 import { PanelState } from "./panel-state"
 
@@ -54,7 +55,7 @@ export function GettingStarted({ site }: { site: Site }) {
 
   const actions: Record<ChecklistItem["id"], React.ReactNode> = {
     bills: (
-      <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/onboarding/" />}>
+      <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/bills/upload/" />}>
         Upload a bill
       </Button>
     ),
@@ -76,6 +77,7 @@ export function GettingStarted({ site }: { site: Site }) {
 
   return (
     <>
+      <NextBillNotice site={site} />
       {!allDone && (
       <Panel
         title="Get started"
@@ -143,7 +145,7 @@ export function GettingStarted({ site }: { site: Site }) {
           title: "No bills yet",
           description: "Upload your latest bill to see what it costs and what it hides.",
           action: "Upload a bill",
-          onAction: () => router.push("/onboarding/"),
+          onAction: () => router.push("/bills/upload/"),
         }}
       />
 
@@ -160,7 +162,7 @@ export function GettingStarted({ site }: { site: Site }) {
               title: "Not enough months yet",
               description: `A trend needs ${TREND_MIN_BILLS} months of bills. You have ${s.billCount}.`,
               action: "Upload a bill",
-              onAction: () => router.push("/onboarding/"),
+              onAction: () => router.push("/bills/upload/"),
             }}
           >
             <ChartContainer config={trendConfig} className="aspect-auto h-56 w-full">
