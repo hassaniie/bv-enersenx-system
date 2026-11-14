@@ -126,3 +126,43 @@ export type Recalculation = {
 export type ChecklistItem = { id: "bills" | "invite" | "budget"; title: string; detail: string; done: boolean; progress?: { value: number; max: number } }
 
 export type Session = { userId: string; orgId: string; siteId: string | null }
+
+/** The kind of saving an action pursues; one per finding type. */
+export type ActionKind = "fixed" | "further" | "pf" | "peak"
+
+export type ActionStatus = "suggested" | "accepted" | "done" | "verified" | "not_achieved" | "dismissed"
+
+export type Person = { name: string; initials: string }
+
+export type Verification = {
+  /** Bill months compared, yyyy-mm. */
+  before: string[]
+  after: string[]
+  /** What was measured, e.g. "PF penalty per bill". */
+  measure: string
+  beforeValue: string
+  afterValue: string
+  /** PKR a month, tax included; 0 when not achieved. */
+  savedMonthlyPkr: number
+  reason: string
+}
+
+export type SavingsAction = {
+  id: string
+  orgId: string
+  siteId: string
+  kind: ActionKind
+  title: string
+  detail: string
+  /** Estimated PKR a month, tax included. */
+  estMonthlyPkr: number
+  status: ActionStatus
+  owner?: Person
+  dueDate?: string
+  note?: string
+  suggestedAt: string
+  acceptedAt?: string
+  /** ISO date the owner marked it done. */
+  doneAt?: string
+  verification?: Verification
+}

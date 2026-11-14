@@ -6,7 +6,8 @@ import { completeMonth, TODAY } from "@/lib/app-date"
 import { latency } from "./client"
 import { sampleBill } from "./sample-bills"
 import { read, seed, write } from "./store"
-import type { Bill, Site } from "./types"
+import { actionTitles } from "./actions"
+import type { Bill, SavingsAction, Site } from "./types"
 
 export type Scenario = "sample" | "bills-1" | "bills-3" | "bills-12"
 
@@ -55,6 +56,41 @@ function rehmat(bills: number) {
   return { site, list }
 }
 
+/** A year in: a capacitor bank that worked, and a peak-shift that didn't (yet). */
+function seededActions(): SavingsAction[] {
+  const base = { orgId: ORG, siteId: SITE, suggestedAt: "2025-09-19" }
+  return [
+    {
+      ...base,
+      id: "act-pf",
+      kind: "pf",
+      title: actionTitles.pf,
+      detail: "Get a capacitor bank sized and checked; most pay back within a few months.",
+      estMonthlyPkr: 268_000,
+      status: "done",
+      owner: { name: "Bilal Ahmed (invited)", initials: "BA" },
+      dueDate: "2025-11-30",
+      acceptedAt: "2025-09-22",
+      doneAt: "2025-11-20",
+      note: "150 kVAR bank installed on the main LT panel by the electrical contractor.",
+    },
+    {
+      ...base,
+      id: "act-peak",
+      kind: "peak",
+      title: actionTitles.peak,
+      detail: "Schedule batch loads (compressors, pumps, pre-cooling) before 5 PM.",
+      estMonthlyPkr: 38_500,
+      status: "done",
+      owner: { name: "Sana Rehman", initials: "SR" },
+      dueDate: "2025-10-15",
+      acceptedAt: "2025-09-22",
+      doneAt: "2025-10-05",
+      note: "Second-shift sizing moved to 3 PM.",
+    },
+  ]
+}
+
 export async function loadScenario(s: Scenario) {
   await latency(300)
   if (s === "sample") {
@@ -78,9 +114,10 @@ export async function loadScenario(s: Scenario) {
       bills: [...d.bills.filter((b) => b.orgId !== ORG), ...list],
       invites: [
         ...d.invites.filter((i) => i.orgId !== ORG),
-        ...(n >= 12 ? [{ id: "inv-bilal", orgId: ORG, email: "bilal@rehmattextiles.pk", role: "manager" as const, invitedAt: TODAY }] : []),
+        ...(n >= 12 ? [{ id: "inv-bilal", orgId: ORG, email: "bilal.ahmed@rehmattextiles.pk", role: "manager" as const, invitedAt: TODAY }] : []),
       ],
       budgets: [...d.budgets.filter((b) => b.siteId !== SITE), ...(n >= 12 ? [{ siteId: SITE, monthlyPkr: 6_500_000 }] : [])],
+      actions: [...(d.actions ?? []).filter((a) => a.orgId !== ORG), ...(n >= 12 ? seededActions() : [])],
     }
     return { ...base, session: { userId: USER, orgId: ORG, siteId: SITE } }
   })

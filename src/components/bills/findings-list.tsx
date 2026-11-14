@@ -1,4 +1,7 @@
+import Link from "next/link"
+
 import { Badge } from "@/components/reui/badge"
+import { Button } from "@/components/ui/button"
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item"
 import type { Finding, FindingKind } from "@/lib/api"
 import { formatPkr } from "@/lib/format"
@@ -12,7 +15,16 @@ export const findingKindMeta: Record<FindingKind, { label: string; variant: Badg
 }
 
 /** What a bill check found, biggest PKR first, each with its next step. */
-export function FindingsList({ findings, size = "default" }: { findings: Finding[]; size?: "default" | "sm" }) {
+export function FindingsList({
+  findings,
+  size = "default",
+  planLink,
+}: {
+  findings: Finding[]
+  size?: "default" | "sm"
+  /** Show a link to Savings Actions on each finding. */
+  planLink?: boolean
+}) {
   const sorted = [...findings].sort((a, b) => b.impactPkr - a.impactPkr)
   return (
     <ItemGroup role="list" aria-label="Findings">
@@ -29,7 +41,12 @@ export function FindingsList({ findings, size = "default" }: { findings: Finding
             <ItemDescription className="line-clamp-none">{f.detail}</ItemDescription>
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <Badge variant={findingKindMeta[f.kind].variant}>{findingKindMeta[f.kind].label}</Badge>
-              <span className="text-xs text-muted-foreground">{f.nextStep}</span>
+              <span className="min-w-0 flex-1 text-xs text-muted-foreground">{f.nextStep}</span>
+              {planLink && (
+                <Button size="xs" variant="outline" nativeButton={false} render={<Link href="/actions/" />}>
+                  Make it an action
+                </Button>
+              )}
             </div>
           </ItemContent>
         </Item>

@@ -1,5 +1,6 @@
 import { completeMonth } from "@/lib/app-date"
 
+import { resolvedKinds } from "./actions"
 import { ApiError, latency } from "./client"
 import { sampleBill } from "./sample-bills"
 import { read, write } from "./store"
@@ -21,10 +22,15 @@ export async function uploadBill(siteId: string, source: BillSource): Promise<Bi
   await latency(500)
   const site = read().sites.find((s) => s.id === siteId)
   if (!site) throw new ApiError("That site no longer exists.")
-  // A first bill shows the common findings: fixed charges on sanctioned load, further tax, low PF.
-  const first = !read().bills.some((b) => b.siteId === siteId)
+  // The common findings (fixed charges on sanctioned load, further tax, low PF)
+  // repeat on every bill until a savings action marked done fixes them.
+  const fixed = resolvedKinds(siteId)
   const bill: Bill = {
-    ...sampleBill(site, nextMonthToRead(siteId), source, { fixedOnSanctioned: first, furtherTax: first }),
+    ...sampleBill(site, nextMonthToRead(siteId), source, {
+      fixedOnSanctioned: !fixed.has("fixed"),
+      furtherTax: !fixed.has("further"),
+      powerFactor: fixed.has("pf") ? 0.93 : undefined,
+    }),
     status: "reading",
   }
   write((d) => ({ ...d, bills: [...d.bills.filter((b) => b.id !== bill.id), bill] }))

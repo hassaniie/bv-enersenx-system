@@ -241,7 +241,7 @@ function Detail({ id }: { id: string }) {
               skeleton={<Skeleton className="h-40 w-full" />}
               empty={{ icon: <SearchCheckIcon />, title: "Nothing to fix on this bill", description: "Every line matches the tariff.", action: "Back to bills", onAction: () => router.push("/bills/") }}
             >
-              {d && <FindingsList findings={d.check.findings} size="sm" />}
+              {d && <FindingsList findings={d.check.findings} size="sm" planLink />}
             </PanelState>
           </Panel>
         </div>

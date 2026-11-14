@@ -195,7 +195,7 @@ export function GettingStarted({ site }: { site: Site }) {
             skeleton={<Skeleton className="h-40 w-full" />}
             empty={{ icon: <SearchCheckIcon />, title: "This bill checks out", description: "It matches the tariff. Upload more months to find savings.", action: "Upload a bill" }}
           >
-            <FindingsList findings={s.check.findings} size="sm" />
+            <FindingsList findings={s.check.findings} size="sm" planLink />
           </PanelState>
         </Panel>
       )}
