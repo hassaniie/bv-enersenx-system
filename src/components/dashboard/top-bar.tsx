@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  BellIcon,
   ChevronDownIcon,
   LaptopIcon,
   LogOutIcon,
@@ -46,7 +47,7 @@ import { Kbd } from "@/components/ui/kbd"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-import { getMe, signOut, useStoreValue } from "@/lib/api"
+import { currentSiteNow, getMe, openAlertCountNow, signOut, useStoreValue } from "@/lib/api"
 
 import { nav } from "./nav"
 
@@ -54,6 +55,7 @@ export function TopBar() {
   const [open, setOpen] = React.useState(false)
   const router = useRouter()
   const me = useStoreValue(getMe)
+  const alerts = useStoreValue(() => (getMe()?.org.data === "own" ? openAlertCountNow(currentSiteNow()?.id) : 0)) ?? 0
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -81,6 +83,24 @@ export function TopBar() {
           <Kbd>⌘K</Kbd>
         </Button>
       </div>
+
+      {me?.org.data === "own" && (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={alerts ? `Alerts, ${alerts} open` : "Alerts"}
+          nativeButton={false}
+          render={<Link href="/alerts/" />}
+          className="relative"
+        >
+          <BellIcon />
+          {alerts > 0 && (
+            <Badge variant="destructive" radius="full" className="absolute -end-0.5 -top-0.5 tabular-nums" aria-hidden>
+              {alerts}
+            </Badge>
+          )}
+        </Button>
+      )}
 
       <DropdownMenu>
         <DropdownMenuTrigger

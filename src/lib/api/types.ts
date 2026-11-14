@@ -166,3 +166,37 @@ export type SavingsAction = {
   doneAt?: string
   verification?: Verification
 }
+
+export type AlertKind = "bill_anomaly" | "budget_overrun" | "missing_bill"
+export type AlertSeverity = "critical" | "warning"
+export type AlertStatus = "open" | "acknowledged" | "resolved"
+
+export type Alert = {
+  id: string
+  siteId: string
+  kind: AlertKind
+  severity: AlertSeverity
+  title: string
+  detail: string
+  /** PKR at stake, tax included (0 when not money). */
+  impactPkr: number
+  /** Bill month it concerns, yyyy-mm. */
+  month: string
+  raisedAt: string
+  nextStep: string
+  /** Where it was sent, e.g. "Email and WhatsApp to Sana Rehman". */
+  sentTo: string
+  status: AlertStatus
+  cause?: string
+  acknowledgedAt?: string
+  acknowledgedBy?: string
+  resolvedAt?: string
+  resolution?: string
+  /** The savings action it became, if any. */
+  actionId?: string
+  /** The savings action that would deal with it; missing bills have none. */
+  actionKind?: ActionKind
+}
+
+/** What people did with an alert; the alert itself is derived from bills. */
+export type AlertState = Pick<Alert, "id" | "status" | "cause" | "acknowledgedAt" | "acknowledgedBy" | "resolvedAt" | "resolution" | "actionId">
