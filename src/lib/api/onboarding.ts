@@ -1,5 +1,6 @@
 import { ApiError, latency } from "./client"
 import { newId, read, write } from "./store"
+import { assertCan, assertCanInvite } from "./settings"
 import type { ChecklistItem, Role } from "./types"
 
 export const BILLS_FOR_A_YEAR = 12
@@ -27,6 +28,7 @@ export async function getChecklist(siteId: string): Promise<ChecklistItem[]> {
 
 export async function inviteMember(input: { email: string; role: Role }) {
   await latency(500)
+  assertCanInvite()
   const db = read()
   const orgId = db.session?.orgId
   if (!orgId) throw new ApiError("You are signed out.")
@@ -40,6 +42,8 @@ export async function inviteMember(input: { email: string; role: Role }) {
 
 export async function setBudget(siteId: string, monthlyPkr: number) {
   await latency(400)
+  assertCan("edit")
+  if (!read().sites.some((s) => s.id === siteId && s.orgId === read().session?.orgId)) throw new ApiError("That site doesn’t exist in this organisation.")
   write((d) => ({ ...d, budgets: [...d.budgets.filter((b) => b.siteId !== siteId), { siteId, monthlyPkr }] }))
 }
 

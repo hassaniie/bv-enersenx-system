@@ -4,7 +4,7 @@
 
 import type { GeneratedReport, Schedule } from "@/lib/reports-data"
 
-import type { AlertState, Bill, Membership, Organisation, SavingsAction, Session, Site, User } from "./types"
+import type { AlertState, Bill, Membership, OrgSettings, Organisation, SavingsAction, Session, Site, User } from "./types"
 
 export const STORAGE_KEY = "enersenx-demo-v1"
 
@@ -26,6 +26,8 @@ export type Db = {
   actions?: SavingsAction[]
   /** What people did with each alert. */
   alertStates?: AlertState[]
+  /** Organisation details, notifications and plan. */
+  orgSettings?: OrgSettings[]
 }
 
 const created = "2025-06-01"

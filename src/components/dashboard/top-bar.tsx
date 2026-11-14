@@ -128,7 +128,7 @@ export function TopBar() {
             <UserIcon />
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/settings/")}>
             <SettingsIcon />
             Settings
           </DropdownMenuItem>

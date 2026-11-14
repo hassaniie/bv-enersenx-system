@@ -6,10 +6,12 @@
 import { TODAY } from "@/lib/app-date"
 
 import { listBillsNow } from "./bills"
+import { ownSite } from "./sites"
 import { ApiError, latency } from "./client"
 import { newId, read, write } from "./store"
 import { GST, recalculate, tariffs } from "./tariff"
 import type { ActionKind, Bill, Person, SavingsAction, Verification } from "./types"
+import { assertCan } from "./settings"
 
 const round = Math.round
 const line = (b: Bill, k: string) => b.lines.find((l) => l.key === k)?.amount ?? 0
@@ -86,7 +88,8 @@ export async function listActions(siteId: string): Promise<SavingsAction[]> {
   await latency(350)
   const db = read()
   const bills = listBillsNow(siteId)
-  const stored = (db.actions ?? []).filter((a) => a.siteId === siteId)
+  if (!ownSite(siteId)) return []
+  const stored = (db.actions ?? []).filter((a) => a.siteId === siteId && a.orgId === db.session?.orgId)
   const taken = new Set(stored.map((a) => a.kind))
   const latest = bills[0]
   const suggestions: SavingsAction[] = latest
@@ -137,6 +140,7 @@ function save(action: SavingsAction) {
 
 export async function acceptAction(suggestion: SavingsAction, input: { owner: Person; dueDate: string; note?: string }) {
   await latency(400)
+  assertCan("edit")
   if (!input.dueDate) throw new ApiError("Choose a due date.")
   const action: SavingsAction = { ...suggestion, id: newId("act"), status: "accepted", owner: input.owner, dueDate: input.dueDate, note: input.note, acceptedAt: TODAY }
   save(action)
@@ -145,11 +149,13 @@ export async function acceptAction(suggestion: SavingsAction, input: { owner: Pe
 
 export async function dismissAction(suggestion: SavingsAction) {
   await latency(250)
+  assertCan("edit")
   save({ ...suggestion, id: newId("act"), status: "dismissed" })
 }
 
 export async function markActionDone(action: SavingsAction, input: { doneAt: string; note?: string }) {
   await latency(400)
+  assertCan("edit")
   if (input.doneAt > TODAY) throw new ApiError("The date can’t be in the future.")
   save({ ...action, status: "done", doneAt: input.doneAt, note: input.note || action.note })
 }
@@ -157,6 +163,7 @@ export async function markActionDone(action: SavingsAction, input: { doneAt: str
 /** Back to suggestions (undo a dismissal). */
 export async function restoreAction(action: SavingsAction) {
   await latency(250)
+  assertCan("edit")
   write((d) => ({ ...d, actions: (d.actions ?? []).filter((a) => a.id !== action.id) }))
 }
 

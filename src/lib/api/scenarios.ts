@@ -1,13 +1,13 @@
 // Ready-made demo organisations, so each new-user state can be reviewed without
 // uploading bills one by one. Loaded from the Demo banner.
 
-import { completeMonth, TODAY } from "@/lib/app-date"
+import { completeMonth, daysFromToday, TODAY } from "@/lib/app-date"
 
 import { latency } from "./client"
 import { sampleBill } from "./sample-bills"
 import { read, seed, write } from "./store"
 import { actionTitles } from "./actions"
-import type { Bill, SavingsAction, Site } from "./types"
+import type { Bill, Role, SavingsAction, Site } from "./types"
 
 export type Scenario = "sample" | "bills-1" | "bills-3" | "bills-12" | "cycle"
 
@@ -138,6 +138,22 @@ export async function loadScenario(s: Scenario) {
       ],
       budgets: [...d.budgets.filter((b) => b.siteId !== SITE), ...(n >= 12 ? [{ siteId: SITE, monthlyPkr: 6_500_000 }] : [])],
       actions: [...(d.actions ?? []).filter((a) => a.orgId !== ORG), ...(n >= 12 ? seededActions(cycle) : [])],
+      // A site that has been on EnerSenX for months is on a plan; a brand-new one is on its trial.
+      orgSettings: [
+        ...(d.orgSettings ?? []).filter((s) => s.orgId !== ORG),
+        {
+          orgId: ORG,
+          plan: n >= 3 ? { id: "starter" as const, cycle: "monthly" as const, trialEnds: addDays(site.createdAt, 14), chosen: "starter" as const } : { id: "trial" as const, cycle: "monthly" as const, trialEnds: addDays(TODAY, 12) },
+          notifications: {
+            bill_anomaly: { email: true, whatsapp: true },
+            budget_overrun: { email: true, whatsapp: true },
+            missing_bill: { email: true, whatsapp: false },
+            bill_reminder: { email: true, whatsapp: true },
+            monthly_report: { email: true, whatsapp: false },
+          },
+          whatsapp: "03001234567",
+        },
+      ],
       alertStates: (d.alertStates ?? []).filter((a) => !a.id.includes(SITE)),
     }
     return { ...base, session: { userId: USER, orgId: ORG, siteId: SITE } }
@@ -152,4 +168,20 @@ export function currentScenario(): Scenario | null {
   const n = db.bills.filter((b) => b.siteId === SITE && b.status === "confirmed").length
   if (n === 11 && (db.actions ?? []).some((a) => a.id === "act-further")) return "cycle"
   return n === 1 ? "bills-1" : n === 3 ? "bills-3" : n === 12 ? "bills-12" : null
+}
+
+/** Demo only: change your own role in the current organisation, to review what each role sees. */
+export async function setDemoRole(role: Role) {
+  await latency(250)
+  write((d) => ({
+    ...d,
+    memberships: d.memberships.map((m) => (m.userId === d.session?.userId && m.orgId === d.session?.orgId ? { ...m, role } : m)),
+  }))
+}
+
+function addDays(iso: string, n: number) {
+  if (iso === TODAY) return daysFromToday(n)
+  const d = new Date(`${iso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
 }

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { addSchedule, deleteReport, generateReport, getReports, setScheduleEnabled, useApiQuery } from "@/lib/api"
+import { addSchedule, can, deleteReport, generateReport, getMe, getReports, setScheduleEnabled, useApiQuery, useStoreValue } from "@/lib/api"
 import { matchesQuery } from "@/lib/filter-predicate"
 import {
   daysAgo,
@@ -149,9 +149,12 @@ function ReportsView({
   const [scheduleOpen, setScheduleOpen] = React.useState(false)
   const [toDelete, setToDelete] = React.useState<GeneratedReport | null>(null)
 
-  const available = data.templates.filter((t) => !t.unavailable)
+  const role = useStoreValue(() => getMe()?.role)
+  const readOnly = !!persist && !can(role, "edit")
+  const allTemplates = readOnly ? data.templates.map((t) => ({ ...t, unavailable: t.unavailable ?? "Viewers can’t generate reports." })) : data.templates
+  const available = allTemplates.filter((t) => !t.unavailable)
   const term = search.trim().toLowerCase()
-  const templates = data.templates.filter(
+  const templates = allTemplates.filter(
     (t) => !term || t.title.toLowerCase().includes(term) || t.description.toLowerCase().includes(term)
   )
   const visibleReports = reports.filter(
@@ -295,7 +298,7 @@ function ReportsView({
           error={error}
           onRetry={retry}
           onClear={clearAll}
-          onGenerate={() => setGenerateFor("energy")}
+          onGenerate={() => (readOnly ? toast.info("Viewers can’t generate reports", { description: "Ask a Manager or Owner." }) : setGenerateFor("energy"))}
           actions={rowActions}
         />
         <SchedulesPanel

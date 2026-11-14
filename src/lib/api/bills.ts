@@ -6,6 +6,7 @@ import { sampleBill } from "./sample-bills"
 import { read, write } from "./store"
 import { computeLines, recalculate, sumLines } from "./tariff"
 import type { Bill, BillSource, KeyField, Recalculation } from "./types"
+import { assertCan } from "./settings"
 
 /** The month a new bill is for: the latest complete month without a bill. */
 function nextMonthToRead(siteId: string) {
@@ -20,8 +21,9 @@ function nextMonthToRead(siteId: string) {
 /** Stores the file and starts reading it. Returns the bill in "reading" status. */
 export async function uploadBill(siteId: string, source: BillSource): Promise<Bill> {
   await latency(500)
-  const site = read().sites.find((s) => s.id === siteId)
-  if (!site) throw new ApiError("That site no longer exists.")
+  assertCan("edit")
+  const site = read().sites.find((s) => s.id === siteId && s.orgId === read().session?.orgId)
+  if (!site) throw new ApiError("That site doesn’t exist or belongs to another organisation.")
   // The common findings (fixed charges on sanctioned load, further tax, low PF)
   // repeat on every bill until a savings action marked done fixes them.
   const fixed = resolvedKinds(siteId)
@@ -38,9 +40,14 @@ export async function uploadBill(siteId: string, source: BillSource): Promise<Bi
 }
 
 /** Reads the uploaded bill (OCR stand-in). Resolves when the 5 key fields are ready to confirm. */
+/** A bill of the current organisation, or undefined. Every bill read and write goes through it. */
+function ownBill(billId: string) {
+  return read().bills.find((b) => b.id === billId && b.orgId === read().session?.orgId)
+}
+
 export async function readBill(billId: string): Promise<Bill> {
   await latency(3_600)
-  const bill = read().bills.find((b) => b.id === billId)
+  const bill = ownBill(billId)
   if (!bill) throw new ApiError("We lost this upload. Upload the bill again.")
   const ready: Bill = { ...bill, status: "needs_review" }
   write((d) => ({ ...d, bills: d.bills.map((b) => (b.id === billId ? ready : b)) }))
@@ -52,8 +59,9 @@ export type KeyFields = Pick<Bill, KeyField>
 /** Saves the confirmed fields. Edited units or MDI recompute the printed lines. */
 export async function confirmBill(billId: string, fields: KeyFields): Promise<Bill> {
   await latency(400)
-  const bill = read().bills.find((b) => b.id === billId)
-  if (!bill) throw new ApiError("We lost this upload. Upload the bill again.")
+  assertCan("edit")
+  const bill = ownBill(billId)
+  if (!bill) throw new ApiError("This bill doesn’t exist or belongs to another organisation.")
   const unitsChanged = fields.peakKwh !== bill.peakKwh || fields.offPeakKwh !== bill.offPeakKwh || fields.mdiKw !== bill.mdiKw
   const fixedOnKw = bill.lines.find((l) => l.key === "fixed")?.basis.match(/^([\d,]+) kW/)?.[1]
   const lines = unitsChanged
@@ -81,7 +89,7 @@ export async function confirmBill(billId: string, fields: KeyFields): Promise<Bi
 
 export async function getBill(billId: string): Promise<Bill> {
   await latency(250)
-  const bill = read().bills.find((b) => b.id === billId && b.orgId === read().session?.orgId)
+  const bill = ownBill(billId)
   if (!bill) throw new ApiError("This bill doesn’t exist or belongs to another organisation.")
   return bill
 }
@@ -93,8 +101,9 @@ export async function listBills(siteId: string): Promise<Bill[]> {
 }
 
 export function listBillsNow(siteId: string): Bill[] {
+  const orgId = read().session?.orgId
   return read()
-    .bills.filter((b) => b.siteId === siteId && b.status === "confirmed")
+    .bills.filter((b) => b.siteId === siteId && b.orgId === orgId && b.status === "confirmed")
     .sort((a, b) => b.month.localeCompare(a.month))
 }
 

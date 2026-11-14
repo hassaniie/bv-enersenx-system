@@ -8,10 +8,12 @@ import { formatBillMonthLong } from "@/lib/format"
 import { actionTitles } from "./actions"
 import { getMe } from "./auth"
 import { listBillsNow } from "./bills"
+import { ownSite } from "./sites"
 import { ApiError, latency } from "./client"
 import { newId, read, write } from "./store"
 import { recalculate } from "./tariff"
 import type { Alert, AlertState, Bill, SavingsAction } from "./types"
+import { assertCan } from "./settings"
 
 const round = Math.round
 const fmt = (n: number) => n.toLocaleString("en-US")
@@ -31,7 +33,7 @@ function recipients() {
 
 function derive(siteId: string): Alert[] {
   const db = read()
-  const site = db.sites.find((s) => s.id === siteId)
+  const site = ownSite(siteId)
   if (!site) return []
   const bills = listBillsNow(siteId) // newest first
   const budget = db.budgets.find((b) => b.siteId === siteId)?.monthlyPkr
@@ -154,12 +156,14 @@ const stateOf = (a: Alert): AlertState => ({
 
 export async function acknowledgeAlert(alert: Alert, cause: string) {
   await latency(350)
+  assertCan("edit")
   if (!cause.trim()) throw new ApiError("Add a cause, even a short one.")
   saveState({ ...stateOf(alert), status: "acknowledged", cause: cause.trim(), acknowledgedAt: TODAY, acknowledgedBy: getMe()?.user.name })
 }
 
 export async function resolveAlert(alert: Alert, resolution: string) {
   await latency(350)
+  assertCan("edit")
   saveState({
     ...stateOf(alert),
     status: "resolved",
@@ -173,6 +177,7 @@ export async function resolveAlert(alert: Alert, resolution: string) {
 /** Turns an alert into an accepted savings action owned by the current user, and resolves the alert. */
 export async function alertToAction(alert: Alert): Promise<SavingsAction> {
   await latency(400)
+  assertCan("edit")
   const me = getMe()
   const kind = alert.actionKind
   if (!kind) throw new ApiError("This alert has no matching savings action.")

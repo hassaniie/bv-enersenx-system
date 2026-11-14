@@ -32,8 +32,8 @@ export const nav: NavItem[] = [
   { title: "Alerts", icon: BellIcon, href: "/alerts/" },
   { title: "Reports", icon: FileTextIcon, href: "/reports/" },
   { title: "Analytics", icon: ChartPieIcon, href: "/analytics/" },
-  { title: "Settings", icon: SettingsIcon },
-  { title: "User Management", icon: UsersIcon },
+  { title: "Settings", icon: SettingsIcon, href: "/settings/" },
+  { title: "User Management", icon: UsersIcon, href: "/settings/?section=users" },
 ]
 
 /** `usePathname()` drops the basePath; trailing slashes vary with `trailingSlash`. */

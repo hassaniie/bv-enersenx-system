@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { Skeleton } from "@/components/ui/skeleton"
-import { billsInProgress, getMonthChange, useApiQuery, type Bill, type Delta, type Site } from "@/lib/api"
+import { can, getMe, useStoreValue, billsInProgress, getMonthChange, useApiQuery, type Bill, type Delta, type Site } from "@/lib/api"
 import { formatBillMonthLong, formatInt, formatPkr } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -221,6 +221,7 @@ function MonthChangeView({ billId, onAnother }: { billId: string; onAnother: () 
 type Stage = { step: "upload"; existing?: Bill } | { step: "check"; bill: Bill } | { step: "result"; billId: string }
 
 function UploadForSite({ site }: { site: Site }) {
+  const role = useStoreValue(() => getMe()?.role)
   const [stage, setStage] = React.useState<Stage | null>(null)
   React.useEffect(() => {
     const pending = billsInProgress().find((b) => b.siteId === site.id)
@@ -228,6 +229,7 @@ function UploadForSite({ site }: { site: Site }) {
   }, [site.id])
   const onRead = React.useCallback((bill: Bill) => setStage({ step: "check", bill }), [])
 
+  if (role && !can(role, "edit")) return <PanelError title="Viewers can’t upload bills" error="Ask a Manager or Owner of this organisation to upload it, or to change your role." />
   if (!stage) return <Skeleton className="mx-auto h-72 w-full max-w-xl" />
   if (stage.step === "result") return <MonthChangeView billId={stage.billId} onAnother={() => setStage({ step: "upload" })} />
   return (

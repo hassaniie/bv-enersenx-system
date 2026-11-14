@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ChevronDownIcon, LayersIcon, RotateCcwIcon, UserPlusIcon } from "lucide-react"
+import { ChevronDownIcon, EyeIcon, LayersIcon, RotateCcwIcon, UserPlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/reui/badge"
@@ -27,7 +27,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { currentScenario, loadScenario, resetDemo, scenarios, useStoreValue, type Scenario } from "@/lib/api"
+import { currentScenario, getMe, loadScenario, resetDemo, scenarios, setDemoRole, useStoreValue, type Role, type Scenario } from "@/lib/api"
 
 /**
  * Sits on every page: says this is a demo with sample data kept in this
@@ -37,6 +37,7 @@ export function DemoBanner() {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const scenario = useStoreValue(currentScenario)
+  const role = useStoreValue(() => getMe()?.role)
 
   return (
     <div
@@ -79,6 +80,33 @@ export function DemoBanner() {
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+        {role && (
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button size="xs" variant="ghost" />}>
+              <EyeIcon data-icon="inline-start" />
+              View as {role[0].toUpperCase() + role.slice(1)}
+              <ChevronDownIcon data-icon="inline-end" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Your role in this organisation</DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  value={role}
+                  onValueChange={async (v) => {
+                    await setDemoRole(v as Role)
+                    toast.success(`Viewing as ${v}`, { description: "Controls you can’t use are hidden, and the data layer refuses them." })
+                  }}
+                >
+                  {(["owner", "manager", "viewer"] as Role[]).map((r) => (
+                    <DropdownMenuRadioItem key={r} value={r} closeOnClick>
+                      {r[0].toUpperCase() + r.slice(1)}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         <Button size="xs" variant="ghost" nativeButton={false} render={<Link href="/signup/" />}>
           <UserPlusIcon data-icon="inline-start" />
           Try as a new user

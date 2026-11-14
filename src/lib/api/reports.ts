@@ -8,6 +8,7 @@ import { getMe } from "./auth"
 import { listBillsNow } from "./bills"
 import { latency } from "./client"
 import { newId, read, write } from "./store"
+import { assertCan } from "./settings"
 
 /** Templates with the reason each one can't run yet, if any. */
 function templatesFor(billCount: number) {
@@ -35,6 +36,7 @@ export async function getReports(siteId: string): Promise<ReportsData> {
 
 export async function generateReport(input: { name: string; type: ReportType }): Promise<GeneratedReport> {
   await latency(300)
+  assertCan("edit")
   const me = getMe()
   const orgId = read().session?.orgId ?? ""
   const report: GeneratedReport & { orgId: string } = {
@@ -57,11 +59,13 @@ export async function generateReport(input: { name: string; type: ReportType }):
 
 export async function deleteReport(id: string) {
   await latency(250)
+  assertCan("edit")
   write((d) => ({ ...d, reports: (d.reports ?? []).filter((r) => r.id !== id) }))
 }
 
 export async function addSchedule(input: { name: string; frequency: Frequency }): Promise<Schedule> {
   await latency(300)
+  assertCan("edit")
   const me = getMe()
   const schedule: Schedule & { orgId: string } = {
     id: newId("sch"),
@@ -78,5 +82,6 @@ export async function addSchedule(input: { name: string; frequency: Frequency })
 
 export async function setScheduleEnabled(id: string, enabled: boolean) {
   await latency(200)
+  assertCan("edit")
   write((d) => ({ ...d, schedules: (d.schedules ?? []).map((s) => (s.id === id ? { ...s, enabled } : s)) }))
 }

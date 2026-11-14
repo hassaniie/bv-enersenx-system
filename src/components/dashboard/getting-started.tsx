@@ -14,7 +14,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getChecklist, getSiteSummary, recoverable, TREND_MIN_BILLS, useApiQuery, type ChecklistItem, type Site } from "@/lib/api"
+import { can, getMe, useStoreValue, getChecklist, getSiteSummary, recoverable, TREND_MIN_BILLS, useApiQuery, type ChecklistItem, type Site } from "@/lib/api"
 import type { Kpi } from "@/lib/dashboard-data"
 import { formatDayMonth } from "@/lib/app-date"
 import { formatBillMonth, formatBillMonthLong, formatInt, formatPkrShort } from "@/lib/format"
@@ -39,6 +39,7 @@ export function GettingStarted({ site }: { site: Site }) {
   const summary = useApiQuery(() => getSiteSummary(site.id), [site.id])
   const [dialog, setDialog] = React.useState<"invite" | "budget" | null>(null)
   const router = useRouter()
+  const role = useStoreValue(() => getMe()?.role)
 
   const s = summary.data
   const latest = s?.latest
@@ -126,7 +127,7 @@ export function GettingStarted({ site }: { site: Site }) {
                     </div>
                   )}
                 </ItemContent>
-                {!c.done && <ItemActions>{actions[c.id]}</ItemActions>}
+                {!c.done && can(role, c.id === "invite" ? "manage_users" : "edit") && <ItemActions>{actions[c.id]}</ItemActions>}
               </Item>
             ))}
           </ItemGroup>

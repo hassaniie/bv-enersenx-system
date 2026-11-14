@@ -3,6 +3,7 @@ import { completeMonth } from "@/lib/app-date"
 import { latency, ApiError } from "./client"
 import { newId, read, write } from "./store"
 import type { ConnectionType, Disco, Site, TariffCode } from "./types"
+import { assertCan } from "./settings"
 
 /** Cities offered at sign-up, with the DISCO that serves them. */
 export const cities: { city: string; disco: Disco }[] = [
@@ -58,6 +59,7 @@ export async function createSite(input: NewSite): Promise<Site> {
   await latency(500)
   const orgId = read().session?.orgId
   if (!orgId) throw new ApiError("You are signed out. Log in to add a site.")
+  assertCan("edit")
   const site: Site = {
     id: newId("s"),
     orgId,
@@ -84,4 +86,10 @@ export function currentSiteNow(): Site | null {
   const sites = listSitesNow()
   const id = read().session?.siteId
   return sites.find((s) => s.id === id) ?? sites[0] ?? null
+}
+
+/** A site of the current organisation, or undefined: every read by site id goes through it. */
+export function ownSite(siteId: string): Site | undefined {
+  const db = read()
+  return db.sites.find((s) => s.id === siteId && s.orgId === db.session?.orgId)
 }

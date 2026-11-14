@@ -15,7 +15,7 @@ import { createOrganisation, getPendingUser, signUp, type BusinessType, type Use
 import { FlowLayout } from "./flow-layout"
 import { FormError } from "./form-error"
 
-const businessTypes: { value: BusinessType; label: string }[] = [
+export const businessTypes: { value: BusinessType; label: string }[] = [
   { value: "textile", label: "Textile or garments" },
   { value: "food", label: "Food and beverage" },
   { value: "cold-storage", label: "Cold storage" },

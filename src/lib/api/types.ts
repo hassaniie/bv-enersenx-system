@@ -200,3 +200,18 @@ export type Alert = {
 
 /** What people did with an alert; the alert itself is derived from bills. */
 export type AlertState = Pick<Alert, "id" | "status" | "cause" | "acknowledgedAt" | "acknowledgedBy" | "resolvedAt" | "resolution" | "actionId">
+
+export type PlanId = "starter" | "pro" | "enterprise"
+export type BillingCycle = "monthly" | "annual"
+
+export type NotificationChannel = "email" | "whatsapp"
+export type NotificationTopic = "bill_anomaly" | "budget_overrun" | "missing_bill" | "bill_reminder" | "monthly_report"
+
+export type OrgSettings = {
+  orgId: string
+  ntn?: string
+  strn?: string
+  plan: { id: PlanId | "trial"; cycle: BillingCycle; trialEnds: string; chosen?: PlanId }
+  notifications: Record<NotificationTopic, Record<NotificationChannel, boolean>>
+  whatsapp?: string
+}

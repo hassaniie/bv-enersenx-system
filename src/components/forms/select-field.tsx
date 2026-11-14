@@ -12,6 +12,7 @@ export function SelectField<T extends string>({
   items,
   description,
   placeholder,
+  disabled,
 }: {
   id: string
   label: string
@@ -20,11 +21,12 @@ export function SelectField<T extends string>({
   items: { value: T; label: string }[]
   description?: string
   placeholder?: string
+  disabled?: boolean
 }) {
   return (
     <Field>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Select items={items} value={value} onValueChange={(v) => v && onChange(v as T)}>
+      <Select items={items} value={value} disabled={disabled} onValueChange={(v) => v && onChange(v as T)}>
         <SelectTrigger id={id} className="w-full">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

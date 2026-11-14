@@ -11,6 +11,7 @@ import { formatBillMonth } from "@/lib/format"
 
 import { latency } from "./client"
 import { listBillsNow } from "./bills"
+import { ownSite } from "./sites"
 import { read } from "./store"
 import { recalculate, recoverable } from "./tariff"
 import type { Bill, BillLineKey } from "./types"
@@ -50,7 +51,7 @@ const lakhs = (n: number) => round2(n / 100_000)
 export async function getSiteCost(siteId: string): Promise<SiteCost> {
   await latency(400)
   const db = read()
-  const site = db.sites.find((s) => s.id === siteId)
+  const site = ownSite(siteId)
   const bills = listBillsNow(siteId) // newest first
   const budget = db.budgets.find((b) => b.siteId === siteId)?.monthlyPkr
   const latest = bills[0]
@@ -180,7 +181,7 @@ export type BillAnalytics = {
 /** Analytics a bills-only site can have; live-meter analytics wait for Phase 2. */
 export async function getBillAnalytics(siteId: string): Promise<BillAnalytics> {
   await latency(400)
-  const site = read().sites.find((s) => s.id === siteId)
+  const site = ownSite(siteId)
   const bills = listBillsNow(siteId)
   const chrono = [...bills].reverse()
   const latest = bills[0]

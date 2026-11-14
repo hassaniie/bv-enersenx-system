@@ -23,7 +23,7 @@ import { PanelState } from "@/components/dashboard/panel-state"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
-import { listBillRows, loadScenario, useApiQuery, type BillCheckStatus, type BillRow, type Site } from "@/lib/api"
+import { can, getMe, useStoreValue, listBillRows, loadScenario, useApiQuery, type BillCheckStatus, type BillRow, type Site } from "@/lib/api"
 import type { Kpi } from "@/lib/dashboard-data"
 import { matchesQuery } from "@/lib/filter-predicate"
 import { formatBillMonth, formatInt } from "@/lib/format"
@@ -52,6 +52,7 @@ export const billHref = (id: string) => `/bills/view/?id=${encodeURIComponent(id
 
 function BillsGrid({ rows: all, status, error, onRetry }: { rows: BillRow[]; status: "loading" | "error" | "ready"; error?: string; onRetry: () => void }) {
   const router = useRouter()
+  const canUpload = can(useStoreValue(() => getMe()?.role), "edit")
   const [query, setQuery] = React.useState<FilterQuery>(() => createFilterQuery())
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 12 })
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -177,10 +178,12 @@ function BillsGrid({ rows: all, status, error, onRetry }: { rows: BillRow[]; sta
             <FrameTitle>Bill History</FrameTitle>
             <span className="text-xs text-muted-foreground">Every bill, checked against the tariff.</span>
           </div>
-          <Button size="sm" onClick={() => router.push("/bills/upload/")}>
-            <UploadIcon data-icon="inline-start" />
-            Upload bill
-          </Button>
+          {canUpload && (
+            <Button size="sm" onClick={() => router.push("/bills/upload/")}>
+              <UploadIcon data-icon="inline-start" />
+              Upload bill
+            </Button>
+          )}
         </FrameHeader>
         {showGrid ? (
           <FramePanel className="p-0">
