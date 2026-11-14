@@ -47,10 +47,10 @@ export function GettingStarted({ site }: { site: Site }) {
   const units = latest ? latest.peakKwh + latest.offPeakKwh : 0
   const kpis: Kpi[] = latest
     ? [
-        { id: "amount", label: "Latest bill", value: formatInt(latest.amountPayable), unit: "PKR", note: [formatBillMonth(latest.month), `due ${formatDayMonth(latest.dueDate)}`], tone: "neutral" },
-        { id: "units", label: "Units", value: formatInt(units), unit: "kWh", note: `MDI ${formatInt(latest.mdiKw)} kW of ${formatInt(site.sanctionedKw)} kW sanctioned`, tone: "neutral" },
+        { id: "amount", label: "Latest bill", value: formatInt(latest.amountPayable), unit: "PKR", short: formatPkrShort(latest.amountPayable), note: [formatBillMonth(latest.month), `due ${formatDayMonth(latest.dueDate)}`], tone: "neutral" },
+        { id: "units", label: "Units", value: formatInt(units), unit: "kWh", short: `${(units / 1000).toFixed(1)}k kWh`, note: `MDI ${formatInt(latest.mdiKw)} kW of ${formatInt(site.sanctionedKw)} kW sanctioned`, tone: "neutral" },
         { id: "peak", label: "Peak-hour share", value: String(Math.round((latest.peakKwh / units) * 100)), unit: "%", note: `${formatInt(latest.peakKwh)} kWh at the peak rate`, tone: latest.peakKwh / units > 0.2 ? "warning" : "neutral" },
-        { id: "found", label: "Found on this bill", value: formatInt(found), unit: "PKR", note: found ? "Billing errors and avoidable charges" : "Nothing to recover", tone: found ? "destructive" : "success" },
+        { id: "found", label: "Found on this bill", value: formatInt(found), unit: "PKR", short: formatPkrShort(found), note: found ? "Billing errors and avoidable charges" : "Nothing to recover", tone: found ? "destructive" : "success" },
       ]
     : []
 
@@ -127,7 +127,9 @@ export function GettingStarted({ site }: { site: Site }) {
                     </div>
                   )}
                 </ItemContent>
-                {!c.done && can(role, c.id === "invite" ? "manage_users" : "edit") && <ItemActions>{actions[c.id]}</ItemActions>}
+                {!c.done && can(role, c.id === "invite" ? "manage_users" : "edit") && (
+                  <ItemActions className="basis-full justify-end @md:basis-auto">{actions[c.id]}</ItemActions>
+                )}
               </Item>
             ))}
           </ItemGroup>
@@ -136,6 +138,7 @@ export function GettingStarted({ site }: { site: Site }) {
       )}
 
       <KpiRow
+        compact
         status={summary.status}
         kpis={kpis}
         error={summary.error}

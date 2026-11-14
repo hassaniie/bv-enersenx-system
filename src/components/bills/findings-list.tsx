@@ -39,9 +39,9 @@ export function FindingsList({
               </span>
             </div>
             <ItemDescription className="line-clamp-none">{f.detail}</ItemDescription>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-xs text-muted-foreground">{f.nextStep}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
               <Badge variant={findingKindMeta[f.kind].variant}>{findingKindMeta[f.kind].label}</Badge>
-              <span className="min-w-0 flex-1 text-xs text-muted-foreground">{f.nextStep}</span>
               {planLink && (
                 <Button size="xs" variant="outline" nativeButton={false} render={<Link href="/actions/" />}>
                   Make it an action

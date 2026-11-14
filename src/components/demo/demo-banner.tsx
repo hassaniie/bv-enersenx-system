@@ -24,7 +24,9 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
+  DropdownMenuItem,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { currentScenario, getMe, loadScenario, resetDemo, scenarios, setDemoRole, useStoreValue, type Role, type Scenario } from "@/lib/api"
@@ -39,6 +41,16 @@ export function DemoBanner() {
   const scenario = useStoreValue(currentScenario)
   const role = useStoreValue(() => getMe()?.role)
 
+  const pickScenario = async (s: Scenario) => {
+    await loadScenario(s)
+    toast.success("Scenario loaded", { description: scenarios.find((x) => x.value === s)?.label })
+    router.push("/")
+  }
+  const pickRole = async (r: Role) => {
+    await setDemoRole(r)
+    toast.success(`Viewing as ${r}`, { description: "Controls you can’t use are hidden, and the data layer refuses them." })
+  }
+
   return (
     <div
       role="region"
@@ -47,9 +59,54 @@ export function DemoBanner() {
     >
       <span className="flex min-w-0 items-center gap-2">
         <Badge variant="info-light">Demo mode</Badge>
-        <span className="truncate">Sample data, saved only in this browser.</span>
+        <span className="hidden truncate sm:inline">Sample data, saved only in this browser.</span>
+        <span className="truncate sm:hidden">Saved in this browser</span>
       </span>
-      <span className="flex flex-wrap items-center gap-1">
+      {/* Phones: everything in one menu, so the banner stays one row. */}
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button size="xs" variant="ghost" className="sm:hidden" />}>
+          <LayersIcon data-icon="inline-start" />
+          Demo
+          <ChevronDownIcon data-icon="inline-end" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Scenario</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={scenario ?? ""} onValueChange={(v) => pickScenario(v as Scenario)}>
+              {scenarios.map((s) => (
+                <DropdownMenuRadioItem key={s.value} value={s.value} closeOnClick>
+                  {s.label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+          {role && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>View as</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={role} onValueChange={(v) => pickRole(v as Role)}>
+                  {(["owner", "manager", "viewer"] as Role[]).map((r) => (
+                    <DropdownMenuRadioItem key={r} value={r} closeOnClick>
+                      {r[0].toUpperCase() + r.slice(1)}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
+            </>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => router.push("/signup/")}>
+            <UserPlusIcon />
+            Try as a new user
+          </DropdownMenuItem>
+          <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
+            <RotateCcwIcon />
+            Reset demo
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <span className="hidden flex-wrap items-center gap-1 sm:flex">
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button size="xs" variant="ghost" />}>
             <LayersIcon data-icon="inline-start" />
@@ -61,12 +118,7 @@ export function DemoBanner() {
               <DropdownMenuLabel>Load a demo scenario</DropdownMenuLabel>
               <DropdownMenuRadioGroup
                 value={scenario ?? ""}
-                onValueChange={async (v) => {
-                  const s = v as Scenario
-                  await loadScenario(s)
-                  toast.success("Scenario loaded", { description: scenarios.find((x) => x.value === s)?.label })
-                  router.push("/")
-                }}
+                onValueChange={(v) => pickScenario(v as Scenario)}
               >
                 {scenarios.map((s) => (
                   <DropdownMenuRadioItem key={s.value} value={s.value} closeOnClick>
@@ -92,10 +144,7 @@ export function DemoBanner() {
                 <DropdownMenuLabel>Your role in this organisation</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
                   value={role}
-                  onValueChange={async (v) => {
-                    await setDemoRole(v as Role)
-                    toast.success(`Viewing as ${v}`, { description: "Controls you can’t use are hidden, and the data layer refuses them." })
-                  }}
+                  onValueChange={(v) => pickRole(v as Role)}
                 >
                   {(["owner", "manager", "viewer"] as Role[]).map((r) => (
                     <DropdownMenuRadioItem key={r} value={r} closeOnClick>

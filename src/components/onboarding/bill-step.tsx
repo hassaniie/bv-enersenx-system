@@ -29,7 +29,9 @@ export function BillStep({
   existing?: Bill
   onRead: (bill: Bill) => void
 }) {
-  const [phase, setPhase] = React.useState<"pick" | "reading" | "error">(existing ? "reading" : "pick")
+  const [phase, setPhase] = React.useState<"pick" | "preview" | "reading" | "error">(existing ? "reading" : "pick")
+  /** A photo waiting for "Read this photo": check it's sharp before uploading. */
+  const [photo, setPhoto] = React.useState<{ src: string; source: BillSource } | null>(null)
   const [source, setSource] = React.useState<BillSource | null>(existing?.source ?? null)
   const [stage, setStage] = React.useState(0)
   const [error, setError] = React.useState<string>()
@@ -76,11 +78,51 @@ export function BillStep({
       accept: "application/pdf,image/*",
       maxSize: MAX_SIZE,
       onFilesAdded: (added) => {
-        const f = added[0]?.file
+        const item = added[0]
+        const f = item?.file
         if (!f) return
-        start({ fileName: f.name, kind: f.type === "application/pdf" ? "pdf" : "photo", sizeBytes: f.size })
+        const source: BillSource = { fileName: f.name, kind: f.type === "application/pdf" ? "pdf" : "photo", sizeBytes: f.size }
+        if (source.kind === "photo" && item.preview) {
+          setPhoto({ src: item.preview, source })
+          setPhase("preview")
+        } else start(source)
       },
     })
+
+  if (phase === "preview" && photo) {
+    return (
+      <>
+        <CardHeader>
+          <CardTitle>Is the photo clear?</CardTitle>
+          <CardDescription>Check you can read the units, MDI and amount. A sharp photo reads first time.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          {/* A local object URL from the camera or file picker. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo.src} alt={`Photo of your bill, ${photo.source.fileName}`} className="max-h-96 w-full rounded-lg border bg-muted object-contain" />
+          <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+            <li>Lay the bill flat, with all four corners in the frame.</li>
+            <li>Use daylight or a bright room; avoid flash glare.</li>
+            <li>Hold steady until the text is sharp.</li>
+          </ul>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPhoto(null)
+                setPhase("pick")
+                camera.current?.click()
+              }}
+            >
+              <CameraIcon data-icon="inline-start" />
+              Retake
+            </Button>
+            <Button onClick={() => start(photo.source)}>Read this photo</Button>
+          </div>
+        </CardContent>
+      </>
+    )
+  }
 
   if (phase !== "pick") {
     const value = phase === "error" ? 0 : Math.round(((stage + 0.5) / stages.length) * 100)
@@ -190,6 +232,7 @@ export function BillStep({
           </div>
         </div>
         {errors.length > 0 && <FormError title="That file won’t work" message={errors.join(" ")} />}
+        <p className="text-xs text-muted-foreground">Taking a photo? Lay the bill flat in good light, all four corners in the frame.</p>
         <div className="flex flex-wrap items-center justify-center gap-x-1 text-xs text-muted-foreground">
           <span>No bill to hand?</span>
           <Button variant="ghost" size="xs" onClick={() => start({ fileName: `${site.disco} bill (sample)`, kind: "sample" })}>

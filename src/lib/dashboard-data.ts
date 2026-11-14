@@ -15,6 +15,8 @@ export type Kpi = {
   tone: "neutral" | "info" | "warning" | "destructive" | "success"
   /** 0–100: draws a progress bar in place of the note. */
   progress?: number
+  /** A shorter value (unit included) for narrow screens, e.g. "63.8 lakh". */
+  short?: string
 }
 
 export type LoadPoint = { time: string; yesterday: number; today: number }

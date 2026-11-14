@@ -33,3 +33,20 @@ for invites.
   screens.
 - The app stays a static export on GitHub Pages. A "Demo mode" banner sits on
   every page with a "Reset demo" action that clears the stored state.
+
+### Decisions made while building the MVP Experience (not covered by the scope doc)
+
+**Data and rules (all in `src/lib/api`)**
+- One switch between data sources: `OrgSwitch`. The original sample organisation keeps its sample files; organisations created in the browser read their own bills.
+- Tariff rates, FPA, duty, GST, further tax and the 0.42 tCO₂/MWh grid factor are sample values in `tariff.ts` / `insights.ts`, not NEPRA notifications.
+- The 5 confirmed fields: billing month, peak kWh, off-peak kWh, MDI, amount payable.
+- Trends need 3 bills (`TREND_MIN_BILLS`). Budget vs actual replaces the year-over-year comparison until 24 bills exist.
+- Suggestions, verification results and alerts are derived from bills on every read; only people's decisions are stored.
+- Verification compares up to 3 bills before the month an action was done with up to 3 after. A charge counts as fixed when it falls 80%; a peak shift needs 3 points.
+- Alerts come from the last 3 bills. Escalation (48 h) is displayed, not sent.
+- Roles are checked in the data layer (`settings.ts` `can` / `assertCan`). Every read and write by site or bill id is scoped to the current organisation. `npm test` covers both.
+
+**Screens and demo**
+- Static export: bill detail and settings use query parameters (`/bills/view/?id=`, `/settings/?section=`).
+- Demo banner: Scenario (sample, 1, 3, 12 bills, monthly cycle), View as (role), Try as a new user, Reset demo.
+- Phones: a bottom tab bar with Upload in the middle; photos are previewed before reading; dashboard KPIs use 2 columns with short values (PKR lakh).
