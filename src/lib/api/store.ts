@@ -2,6 +2,8 @@
 // Only files in src/lib/api/ touch it; screens call the typed functions.
 // "Reset demo" clears it and the seed comes back.
 
+import type { GeneratedReport, Schedule } from "@/lib/reports-data"
+
 import type { Bill, Membership, Organisation, Session, Site, User } from "./types"
 
 export const STORAGE_KEY = "enersenx-demo-v1"
@@ -17,6 +19,9 @@ export type Db = {
   /** Pending invites by email. */
   invites: { id: string; orgId: string; email: string; role: Membership["role"]; invitedAt: string }[]
   budgets: { siteId: string; monthlyPkr: number }[]
+  /** Reports and schedules of organisations created here (the sample org keeps its sample list). */
+  reports?: (GeneratedReport & { orgId: string })[]
+  schedules?: (Schedule & { orgId: string })[]
 }
 
 const created = "2025-06-01"

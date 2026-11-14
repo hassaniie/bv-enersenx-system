@@ -7,13 +7,17 @@ import { toast } from "sonner"
 import { createFilterQuery, createFilterRule } from "@/components/reui/filters/filters-query"
 import type { FilterQuery } from "@/components/reui/filters/filters-types"
 import { AppShell } from "@/components/dashboard/app-shell"
+import { OrgSwitch } from "@/components/dashboard/org-switch"
+import type { PanelStatus } from "@/components/dashboard/panel-state"
 import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { addSchedule, deleteReport, generateReport, getReports, setScheduleEnabled, useApiQuery } from "@/lib/api"
 import { matchesQuery } from "@/lib/filter-predicate"
 import {
   daysAgo,
+  emptyReportsData,
   fetchReports,
   formatLabels,
   nextRun,
@@ -22,6 +26,7 @@ import {
   referenceDate,
   reportsData,
   type DemoState,
+  type ReportsData,
   type GeneratedReport,
   type ReportFormat,
   type ReportType,
@@ -72,7 +77,59 @@ function ToolbarSelect({
 }
 
 export function Reports({ demo }: { demo: DemoState }) {
-  const { status, data, error, retry } = useDemoQuery(fetchReports, demo, reportsData)
+  return (
+    <AppShell title="Reports">
+      <OrgSwitch sample={<SampleReports demo={demo} />} own={(site) => <OwnReports siteId={site.id} />} />
+    </AppShell>
+  )
+}
+
+/** The original sample organisation: the sample report list, edits kept for this visit. */
+function SampleReports({ demo }: { demo: DemoState }) {
+  const q = useDemoQuery(fetchReports, demo, reportsData)
+  return <ReportsView {...q} />
+}
+
+/** An organisation created here: reports and schedules saved through the data layer. */
+function OwnReports({ siteId }: { siteId: string }) {
+  const q = useApiQuery(() => getReports(siteId), [siteId])
+  return (
+    <ReportsView
+      status={q.status}
+      data={q.data ?? emptyReportsData}
+      error={q.error}
+      retry={q.retry}
+      persist={{
+        generate: (req) => generateReport({ name: req.name, type: req.template }),
+        remove: deleteReport,
+        addSchedule: (req) => addSchedule({ name: req.name, frequency: req.frequency }),
+        toggle: setScheduleEnabled,
+      }}
+    />
+  )
+}
+
+type Persist = {
+  generate: (req: GenerateRequest) => Promise<unknown>
+  remove: (id: string) => Promise<unknown>
+  addSchedule: (req: ScheduleRequest) => Promise<unknown>
+  toggle: (id: string, enabled: boolean) => Promise<unknown>
+}
+
+function ReportsView({
+  status,
+  data,
+  error,
+  retry,
+  persist,
+}: {
+  status: PanelStatus
+  data: ReportsData
+  error?: string
+  retry: () => void
+  /** Save changes through the data layer; without it, edits stay local (sample). */
+  persist?: Persist
+}) {
 
   // Local copies so generate, delete and toggle work without a backend.
   const [reports, setReports] = React.useState<GeneratedReport[]>(data.reports)
@@ -92,6 +149,7 @@ export function Reports({ demo }: { demo: DemoState }) {
   const [scheduleOpen, setScheduleOpen] = React.useState(false)
   const [toDelete, setToDelete] = React.useState<GeneratedReport | null>(null)
 
+  const available = data.templates.filter((t) => !t.unavailable)
   const term = search.trim().toLowerCase()
   const templates = data.templates.filter(
     (t) => !term || t.title.toLowerCase().includes(term) || t.description.toLowerCase().includes(term)
@@ -111,6 +169,14 @@ export function Reports({ demo }: { demo: DemoState }) {
 
   const generated = React.useRef(0)
   const generate = (req: GenerateRequest) => {
+    if (persist) {
+      setGenerateFor(null)
+      persist.generate(req).then(
+        () => toast.success("Report queued", { description: `${formatLabels[req.format]}, ${req.name}` }),
+        (e: Error) => toast.error("Couldn’t generate the report", { description: e.message })
+      )
+      return
+    }
     generated.current += 1
     const id = `generated-${generated.current}`
     setReports((list) => [
@@ -126,6 +192,14 @@ export function Reports({ demo }: { demo: DemoState }) {
   }
 
   const addSchedule = (req: ScheduleRequest) => {
+    if (persist) {
+      setScheduleOpen(false)
+      persist.addSchedule(req).then(
+        () => toast.success("Schedule added", { description: req.name }),
+        (e: Error) => toast.error("Couldn’t add the schedule", { description: e.message })
+      )
+      return
+    }
     setSchedules((list) => [
       ...list,
       { id: `s${list.length + 1}-${req.template}`, name: req.name, frequency: req.frequency, next: nextRun(req.frequency), enabled: true, recipients: [people.hm] },
@@ -151,13 +225,13 @@ export function Reports({ demo }: { demo: DemoState }) {
   )
 
   return (
-    <AppShell title="Reports">
+    <>
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" onClick={() => setGenerateFor("energy")}>
+        <Button size="sm" disabled={!available.some((t) => t.id === "energy")} onClick={() => setGenerateFor("energy")}>
           <PlusIcon data-icon="inline-start" />
           Generate report
         </Button>
-        <Button size="sm" variant="outline" onClick={() => setScheduleOpen(true)}>
+        <Button size="sm" variant="outline" disabled={available.length === 0} onClick={() => setScheduleOpen(true)}>
           <CalendarPlusIcon data-icon="inline-start" />
           Schedule
         </Button>
@@ -231,6 +305,7 @@ export function Reports({ demo }: { demo: DemoState }) {
           onRetry={retry}
           onAdd={() => setScheduleOpen(true)}
           onToggle={(id, enabled) => {
+            if (persist) persist.toggle(id, enabled)
             setSchedules((list) => list.map((s) => (s.id === id ? { ...s, enabled } : s)))
             const name = schedules.find((s) => s.id === id)?.name
             toast.success(enabled ? "Schedule resumed" : "Schedule paused", { description: name })
@@ -241,7 +316,7 @@ export function Reports({ demo }: { demo: DemoState }) {
       <GenerateReportDialog
         open={generateFor !== null}
         onOpenChange={(open) => !open && setGenerateFor(null)}
-        templates={data.templates}
+        templates={available}
         initialTemplate={generateFor ?? "energy"}
         initialRange={range === "all" ? "30" : range}
         initialFormat={format}
@@ -250,7 +325,7 @@ export function Reports({ demo }: { demo: DemoState }) {
       <ScheduleReportDialog
         open={scheduleOpen}
         onOpenChange={setScheduleOpen}
-        templates={data.templates}
+        templates={available}
         onSubmit={addSchedule}
       />
       <DeleteReportDialog
@@ -258,11 +333,12 @@ export function Reports({ demo }: { demo: DemoState }) {
         onCancel={() => setToDelete(null)}
         onConfirm={() => {
           if (!toDelete) return
+          if (persist) persist.remove(toDelete.id)
           setReports((list) => list.filter((r) => r.id !== toDelete.id))
           toast.success("Report deleted", { description: toDelete.name })
           setToDelete(null)
         }}
       />
-    </AppShell>
+    </>
   )
 }

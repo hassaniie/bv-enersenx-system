@@ -3,15 +3,18 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { CheckIcon, FileTextIcon, GaugeIcon, HandCoinsIcon, ListChecksIcon, ReceiptTextIcon, SearchCheckIcon, ZapIcon } from "lucide-react"
+import { ChartColumnIcon, CheckIcon, FileTextIcon, GaugeIcon, HandCoinsIcon, ListChecksIcon, ReceiptTextIcon, SearchCheckIcon, ZapIcon } from "lucide-react"
+
+import { Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from "recharts"
 
 import { Badge } from "@/components/reui/badge"
 import { FindingsList } from "@/components/bills/findings-list"
 import { Button } from "@/components/ui/button"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getChecklist, getSiteSummary, recoverable, useApiQuery, type ChecklistItem, type Site } from "@/lib/api"
+import { getChecklist, getSiteSummary, recoverable, TREND_MIN_BILLS, useApiQuery, type ChecklistItem, type Site } from "@/lib/api"
 import type { Kpi } from "@/lib/dashboard-data"
 import { formatDayMonth } from "@/lib/app-date"
 import { formatBillMonth, formatBillMonthLong, formatInt, formatPkr, formatPkrShort } from "@/lib/format"
@@ -22,6 +25,10 @@ import { InviteDialog } from "./invite-dialog"
 import { KpiRow } from "./kpi-row"
 import { Panel } from "./panel"
 import { PanelState } from "./panel-state"
+
+const trendConfig = {
+  amount: { label: "Billed", theme: { light: "var(--color-violet-500)", dark: "var(--color-violet-400)" } },
+} satisfies ChartConfig
 
 const billIcons = { amount: ReceiptTextIcon, units: ZapIcon, peak: GaugeIcon, found: HandCoinsIcon }
 
@@ -64,9 +71,12 @@ export function GettingStarted({ site }: { site: Site }) {
   }
 
   const done = checklist.data?.filter((c) => c.done).length ?? 0
+  const allDone = checklist.status === "ready" && checklist.data?.every((c) => c.done)
+  const trend = (s?.history ?? []).map((h) => ({ month: formatBillMonth(h.month).replace(" 20", " ’"), amount: Math.round(h.amount / 10_000) / 10 }))
 
   return (
     <>
+      {!allDone && (
       <Panel
         title="Get started"
         hint={checklist.data ? `${done} of ${checklist.data.length} done` : undefined}
@@ -120,6 +130,7 @@ export function GettingStarted({ site }: { site: Site }) {
           </ItemGroup>
         </PanelState>
       </Panel>
+      )}
 
       <KpiRow
         status={summary.status}
@@ -135,6 +146,36 @@ export function GettingStarted({ site }: { site: Site }) {
           onAction: () => router.push("/onboarding/"),
         }}
       />
+
+      {s && s.billCount > 0 && (
+        <Panel title="Monthly Bills" hint={["PKR lakhs", s.budget ? `budget ${formatPkrShort(s.budget)}` : "no budget set"]}>
+          <PanelState
+            status={summary.status}
+            error={summary.error}
+            onRetry={summary.retry}
+            isEmpty={s.billCount < TREND_MIN_BILLS}
+            skeleton={<Skeleton className="h-56 w-full" />}
+            empty={{
+              icon: <ChartColumnIcon />,
+              title: "Not enough months yet",
+              description: `A trend needs ${TREND_MIN_BILLS} months of bills. You have ${s.billCount}.`,
+              action: "Upload a bill",
+              onAction: () => router.push("/onboarding/"),
+            }}
+          >
+            <ChartContainer config={trendConfig} className="aspect-auto h-56 w-full">
+              <BarChart accessibilityLayer data={trend} margin={{ top: 8, left: -20, right: 8 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                {s.budget && <ReferenceLine y={s.budget / 100_000} stroke="var(--muted-foreground)" strokeDasharray="5 5" />}
+                <Bar dataKey="amount" fill="var(--color-amount)" maxBarSize={40} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ChartContainer>
+          </PanelState>
+        </Panel>
+      )}
 
       {latest && s?.check && (
         <Panel

@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { RotateCcwIcon, UserPlusIcon } from "lucide-react"
+import { ChevronDownIcon, LayersIcon, RotateCcwIcon, UserPlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/reui/badge"
@@ -18,7 +18,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { resetDemo } from "@/lib/api"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { currentScenario, loadScenario, resetDemo, scenarios, useStoreValue, type Scenario } from "@/lib/api"
 
 /**
  * Sits on every page: says this is a demo with sample data kept in this
@@ -27,6 +36,7 @@ import { resetDemo } from "@/lib/api"
 export function DemoBanner() {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
+  const scenario = useStoreValue(currentScenario)
 
   return (
     <div
@@ -38,7 +48,37 @@ export function DemoBanner() {
         <Badge variant="info-light">Demo mode</Badge>
         <span className="truncate">Sample data, saved only in this browser.</span>
       </span>
-      <span className="flex items-center gap-1">
+      <span className="flex flex-wrap items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button size="xs" variant="ghost" />}>
+            <LayersIcon data-icon="inline-start" />
+            Scenario
+            <ChevronDownIcon data-icon="inline-end" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Load a demo scenario</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={scenario ?? ""}
+                onValueChange={async (v) => {
+                  const s = v as Scenario
+                  await loadScenario(s)
+                  toast.success("Scenario loaded", { description: scenarios.find((x) => x.value === s)?.label })
+                  router.push("/")
+                }}
+              >
+                {scenarios.map((s) => (
+                  <DropdownMenuRadioItem key={s.value} value={s.value}>
+                    <span className="flex flex-col gap-0.5">
+                      <span>{s.label}</span>
+                      <span className="text-xs text-muted-foreground">{s.detail}</span>
+                    </span>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button size="xs" variant="ghost" nativeButton={false} render={<Link href="/signup/" />}>
           <UserPlusIcon data-icon="inline-start" />
           Try as a new user

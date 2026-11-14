@@ -60,11 +60,18 @@ export function BillingPanel({
   invoices,
   error,
   onRetry,
+  title = "Detailed Billing & Invoices",
+  meterLabel = "Meter ID",
+  onEmptyAction,
 }: {
   status: PanelStatus
   invoices: Invoice[]
   error?: string
   onRetry: () => void
+  title?: string
+  /** Column title for `meterId`: a meter, or a bill's reference number. */
+  meterLabel?: string
+  onEmptyAction?: () => void
 }) {
   const [query, setQuery] = React.useState<FilterQuery>(() => createFilterQuery())
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 8 })
@@ -118,7 +125,7 @@ export function BillingPanel({
       },
       {
         accessorKey: "meterId",
-        header: ({ column }) => <DataGridColumnHeader title="Meter ID" column={column} />,
+        header: ({ column }) => <DataGridColumnHeader title={meterLabel} column={column} />,
         size: 120,
         meta: { skeleton: <Skeleton className="h-4 w-20" /> },
       },
@@ -173,7 +180,7 @@ export function BillingPanel({
         meta: { skeleton: <Skeleton className="h-5 w-14" /> },
       },
     ],
-    []
+    [meterLabel]
   )
 
   const table = useTable({
@@ -215,7 +222,7 @@ export function BillingPanel({
     >
       <Frame spacing="default" className="min-w-0">
         <FrameHeader className="flex-row flex-wrap items-center justify-between gap-2">
-          <FrameTitle>Detailed Billing & Invoices</FrameTitle>
+          <FrameTitle>{title}</FrameTitle>
           <Button
             size="sm"
             disabled={status !== "ready" || rows.length === 0}
@@ -262,6 +269,7 @@ export function BillingPanel({
                 title: "No invoices yet",
                 description: "Invoices appear once a bill is imported.",
                 action: "Import bill",
+                onAction: onEmptyAction,
               }}
             >
               {null}

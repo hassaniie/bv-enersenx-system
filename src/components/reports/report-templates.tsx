@@ -33,15 +33,26 @@ function TemplateMenu({ template, actions }: { template: ReportTemplate; actions
         <EllipsisVerticalIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => actions.onGenerate(template.id)}>Generate now</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => actions.onSchedule(template.id)}>Schedule…</DropdownMenuItem>
+        <DropdownMenuItem disabled={!!template.unavailable} onClick={() => actions.onGenerate(template.id)}>
+          Generate now
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={!!template.unavailable} onClick={() => actions.onSchedule(template.id)}>
+          Schedule…
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => actions.onShowReports(template.id)}>Show past reports</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
 }
 
-function LastGenerated({ date }: { date?: string }) {
+function LastGenerated({ date, unavailable }: { date?: string; unavailable?: string }) {
+  if (unavailable)
+    return (
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-xs text-muted-foreground">Not available yet</span>
+        <span className="text-xs font-medium">{unavailable}</span>
+      </div>
+    )
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-muted-foreground">Last generated</span>
@@ -116,8 +127,8 @@ export function ReportTemplates({
                     <CardDescription className="line-clamp-2">{t.description}</CardDescription>
                   </CardContent>
                   <CardFooter className="justify-between gap-2">
-                    <LastGenerated date={lastGenerated(t.id)} />
-                    <Button size="sm" variant="outline" onClick={() => actions.onGenerate(t.id)}>
+                    <LastGenerated date={lastGenerated(t.id)} unavailable={t.unavailable} />
+                    <Button size="sm" variant="outline" disabled={!!t.unavailable} onClick={() => actions.onGenerate(t.id)}>
                       Generate
                     </Button>
                   </CardFooter>
@@ -142,9 +153,9 @@ export function ReportTemplates({
                   </ItemContent>
                   <ItemActions>
                     <span className="hidden @2xl:block">
-                      <LastGenerated date={lastGenerated(t.id)} />
+                      <LastGenerated date={lastGenerated(t.id)} unavailable={t.unavailable} />
                     </span>
-                    <Button size="sm" variant="outline" onClick={() => actions.onGenerate(t.id)}>
+                    <Button size="sm" variant="outline" disabled={!!t.unavailable} onClick={() => actions.onGenerate(t.id)}>
                       Generate
                     </Button>
                     <TemplateMenu template={t} actions={actions} />

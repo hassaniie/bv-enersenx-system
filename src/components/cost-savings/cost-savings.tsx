@@ -3,10 +3,12 @@
 import { HandCoinsIcon, PercentIcon, ReceiptTextIcon, TrendingUpIcon, WalletIcon } from "lucide-react"
 
 import { AppShell } from "@/components/dashboard/app-shell"
+import { OrgSwitch } from "@/components/dashboard/org-switch"
 import { KpiRow } from "@/components/dashboard/kpi-row"
 import { costSavingsData, fetchCostSavings, type DemoState } from "@/lib/cost-savings-data"
 import { useDemoQuery } from "@/lib/use-demo-query"
 
+import { BillCostSavings } from "./bill-cost"
 import { BillingPanel } from "./billing-panel"
 import { CostChartsRow } from "./cost-charts"
 import { OpportunitiesPanel } from "./opportunities-panel"
@@ -20,11 +22,20 @@ const kpiIcons = {
 }
 
 export function CostSavings({ demo }: { demo: DemoState }) {
+  return (
+    <AppShell title="Cost & Savings">
+      <OrgSwitch sample={<SampleCostSavings demo={demo} />} own={(site) => <BillCostSavings site={site} />} />
+    </AppShell>
+  )
+}
+
+/** The original sample organisation: every panel reads the sample files. */
+function SampleCostSavings({ demo }: { demo: DemoState }) {
   const { status, data, error, retry } = useDemoQuery(fetchCostSavings, demo, costSavingsData)
   const state = { status, error, onRetry: retry }
 
   return (
-    <AppShell title="Cost & Savings">
+    <>
       <KpiRow
         {...state}
         kpis={data.kpis}
@@ -42,6 +53,6 @@ export function CostSavings({ demo }: { demo: DemoState }) {
         <OpportunitiesPanel {...state} opportunities={data.opportunities} />
       </div>
       <BillingPanel {...state} invoices={data.invoices} />
-    </AppShell>
+    </>
   )
 }

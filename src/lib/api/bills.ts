@@ -108,6 +108,9 @@ export type SiteSummary = {
   latest: Bill | null
   check: Recalculation | null
   billCount: number
+  /** Amount payable per month, oldest first. */
+  history: { month: string; amount: number }[]
+  budget?: number
 }
 
 /** The latest confirmed bill of a site and what its check found. */
@@ -115,5 +118,7 @@ export async function getSiteSummary(siteId: string): Promise<SiteSummary> {
   await latency(300)
   const bills = listBillsNow(siteId)
   const latest = bills[0] ?? null
-  return { latest, check: latest ? recalculate(latest) : null, billCount: bills.length }
+  const budget = read().budgets.find((b) => b.siteId === siteId)?.monthlyPkr
+  const history = [...bills].reverse().map((b) => ({ month: b.month, amount: b.amountPayable }))
+  return { latest, check: latest ? recalculate(latest) : null, billCount: bills.length, history, budget }
 }

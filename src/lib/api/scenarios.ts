@@ -1,0 +1,96 @@
+// Ready-made demo organisations, so each new-user state can be reviewed without
+// uploading bills one by one. Loaded from the Demo banner.
+
+import { completeMonth, TODAY } from "@/lib/app-date"
+
+import { latency } from "./client"
+import { sampleBill } from "./sample-bills"
+import { read, seed, write } from "./store"
+import type { Bill, Site } from "./types"
+
+export type Scenario = "sample" | "bills-1" | "bills-3" | "bills-12"
+
+export const scenarios: { value: Scenario; label: string; detail: string }[] = [
+  { value: "sample", label: "Sample organisation", detail: "The original demo: full year, live meters" },
+  { value: "bills-1", label: "New site, 1 bill", detail: "Rehmat Textiles right after sign-up" },
+  { value: "bills-3", label: "New site, 3 bills", detail: "A few months uploaded" },
+  { value: "bills-12", label: "New site, 12 bills", detail: "A full year of bills, budget set" },
+]
+
+const ORG = "o-rehmat"
+const USER = "u-sana"
+const SITE = "s-rehmat-fsd"
+
+/** Rehmat Textiles: a 500 kW weaving unit in Faisalabad on FESCO's B-2(b) tariff. */
+function rehmat(bills: number) {
+  const site: Site = {
+    id: SITE,
+    orgId: ORG,
+    name: "Faisalabad weaving unit",
+    city: "Faisalabad",
+    disco: "FESCO",
+    connectionType: "industrial",
+    tariff: "B-2(b)",
+    sanctionedKw: 500,
+    areaSqft: 120_000,
+    archived: false,
+    createdAt: completeMonth(bills).start,
+  }
+  // Oldest first. The same billing errors repeat every month (they do, until a
+  // complaint fixes them); a capacitor bank lifts the power factor in the last two months of a year.
+  const list: Bill[] = Array.from({ length: bills }, (_, i) => {
+    const back = bills - 1 - i
+    const month = completeMonth(back).start.slice(0, 7)
+    const fixedPf = bills >= 12 && back < 2
+    return {
+      ...sampleBill(site, month, { fileName: `FESCO ${month}.pdf`, kind: "pdf", sizeBytes: 412_000 + i * 731 }, {
+        fixedOnSanctioned: true,
+        furtherTax: true,
+        powerFactor: fixedPf ? 0.93 : 0.87 + (i % 3) * 0.01,
+        peakShare: 0.2 + ((i * 7) % 5) / 100,
+      }),
+      status: "confirmed",
+    }
+  })
+  return { site, list }
+}
+
+export async function loadScenario(s: Scenario) {
+  await latency(300)
+  if (s === "sample") {
+    write((d) => ({ ...seed(), users: d.users, orgs: d.orgs, memberships: d.memberships, sites: d.sites, bills: d.bills, invites: d.invites, budgets: d.budgets, session: seed().session }))
+    return
+  }
+  const n = Number(s.split("-")[1])
+  const { site, list } = rehmat(n)
+  write((d) => {
+    const base = {
+      ...d,
+      users: d.users.some((u) => u.id === USER)
+        ? d.users
+        : [...d.users, { id: USER, name: "Sana Rehman", email: "sana@rehmattextiles.pk", initials: "SR" }],
+      orgs: [
+        ...d.orgs.filter((o) => o.id !== ORG),
+        { id: ORG, name: "Rehmat Textiles (Pvt) Ltd", businessType: "textile" as const, data: "own" as const, createdAt: site.createdAt },
+      ],
+      memberships: [...d.memberships.filter((m) => m.orgId !== ORG), { userId: USER, orgId: ORG, role: "owner" as const }],
+      sites: [...d.sites.filter((x) => x.orgId !== ORG), site],
+      bills: [...d.bills.filter((b) => b.orgId !== ORG), ...list],
+      invites: [
+        ...d.invites.filter((i) => i.orgId !== ORG),
+        ...(n >= 12 ? [{ id: "inv-bilal", orgId: ORG, email: "bilal@rehmattextiles.pk", role: "manager" as const, invitedAt: TODAY }] : []),
+      ],
+      budgets: [...d.budgets.filter((b) => b.siteId !== SITE), ...(n >= 12 ? [{ siteId: SITE, monthlyPkr: 6_500_000 }] : [])],
+    }
+    return { ...base, session: { userId: USER, orgId: ORG, siteId: SITE } }
+  })
+}
+
+/** Which scenario the current session matches, for the banner's picker. */
+export function currentScenario(): Scenario | null {
+  const db = read()
+  if (db.session?.orgId === "o-sample") return "sample"
+  if (db.session?.orgId !== ORG) return null
+  const n = db.bills.filter((b) => b.siteId === SITE && b.status === "confirmed").length
+  return n === 1 ? "bills-1" : n === 3 ? "bills-3" : n === 12 ? "bills-12" : null
+}
