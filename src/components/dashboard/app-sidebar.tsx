@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { RefreshCwIcon } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { PlusIcon, RefreshCwIcon } from "lucide-react"
 
 import {
   Select,
@@ -30,13 +30,9 @@ import { Badge } from "@/components/reui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
-import { isCurrent, nav, type NavItem } from "./nav"
+import { currentSiteNow, getMe, listSitesNow, selectSite, useStoreValue } from "@/lib/api"
 
-const facilities = [
-  { value: "kabirwala", label: "Nestle Kabirwala" },
-  { value: "sheikhupura", label: "Nestle Sheikhupura" },
-  { value: "islamabad", label: "Nestle Islamabad" },
-]
+import { isCurrent, nav, type NavItem } from "./nav"
 
 export function Logo() {
   return (
@@ -116,23 +112,43 @@ export function AppSidebar() {
         </nav>
       </SidebarContent>
 
-      <SidebarFooter className="gap-3 group-data-[collapsible=icon]:hidden" role="region" aria-label="Facility status">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs text-muted-foreground">Facility</span>
-          <Select items={facilities} defaultValue="kabirwala">
+      <FacilityFooter />
+    </Sidebar>
+  )
+}
+
+/** The facility picker lists the organisation's sites; live device status only shows where meters exist (sample data). */
+function FacilityFooter() {
+  const router = useRouter()
+  const ctx = useStoreValue(() => ({ sites: listSitesNow(), current: currentSiteNow(), me: getMe() }))
+  const items = ctx?.sites.map((s) => ({ value: s.id, label: s.name })) ?? []
+
+  return (
+    <SidebarFooter className="gap-3 group-data-[collapsible=icon]:hidden" role="region" aria-label="Facility">
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs text-muted-foreground">Facility</span>
+        {ctx && items.length === 0 ? (
+          <Button variant="outline" size="sm" onClick={() => router.push("/onboarding/")}>
+            <PlusIcon data-icon="inline-start" />
+            Add a site
+          </Button>
+        ) : (
+          <Select items={items} value={ctx?.current?.id ?? null} onValueChange={(v) => v && selectSite(v)}>
             <SelectTrigger className="w-full" aria-label="Facility">
-              <SelectValue />
+              <SelectValue placeholder="Loading…" />
             </SelectTrigger>
             <SelectContent>
-              {facilities.map((f) => (
+              {items.map((f) => (
                 <SelectItem key={f.value} value={f.value}>
                   {f.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
+        )}
+      </div>
 
+      {ctx?.me?.org.data === "sample" && (
         <Card size="sm">
           <CardContent className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 flex-col gap-0.5">
@@ -151,7 +167,7 @@ export function AppSidebar() {
             </Button>
           </CardContent>
         </Card>
-      </SidebarFooter>
-    </Sidebar>
+      )}
+    </SidebarFooter>
   )
 }

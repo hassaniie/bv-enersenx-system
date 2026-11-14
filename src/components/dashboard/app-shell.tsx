@@ -2,6 +2,7 @@
 
 import { MotionConfig } from "motion/react"
 
+import { DemoBanner } from "@/components/demo/demo-banner"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 import { AppSidebar } from "./app-sidebar"
@@ -14,6 +15,7 @@ export function AppShell({ title, children }: { title: string; children: React.R
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="min-w-0">
+          <DemoBanner />
           <TopBar />
           <PageHeader title={title} />
           <div className="@container flex min-w-0 flex-col gap-2 p-3">

@@ -1,0 +1,39 @@
+import { Badge } from "@/components/reui/badge"
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item"
+import type { Finding, FindingKind } from "@/lib/api"
+import { formatPkr } from "@/lib/format"
+
+type BadgeVariant = React.ComponentProps<typeof Badge>["variant"]
+
+export const findingKindMeta: Record<FindingKind, { label: string; variant: BadgeVariant }> = {
+  billing_error: { label: "Billing error", variant: "destructive-light" },
+  avoidable: { label: "Avoidable", variant: "warning-light" },
+  opportunity: { label: "Saving idea", variant: "info-light" },
+}
+
+/** What a bill check found, biggest PKR first, each with its next step. */
+export function FindingsList({ findings, size = "default" }: { findings: Finding[]; size?: "default" | "sm" }) {
+  const sorted = [...findings].sort((a, b) => b.impactPkr - a.impactPkr)
+  return (
+    <ItemGroup role="list" aria-label="Findings">
+      {sorted.map((f) => (
+        <Item key={f.id} variant="outline" size={size} role="listitem" className="items-start">
+          <ItemContent className="min-w-0 gap-1">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <ItemTitle>{f.title}</ItemTitle>
+              <span className="text-sm font-semibold tabular-nums">
+                {formatPkr(f.impactPkr)}
+                <span className="font-normal text-muted-foreground">{f.kind === "opportunity" ? " / month" : ""}</span>
+              </span>
+            </div>
+            <ItemDescription className="line-clamp-none">{f.detail}</ItemDescription>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Badge variant={findingKindMeta[f.kind].variant}>{findingKindMeta[f.kind].label}</Badge>
+              <span className="text-xs text-muted-foreground">{f.nextStep}</span>
+            </div>
+          </ItemContent>
+        </Item>
+      ))}
+    </ItemGroup>
+  )
+}

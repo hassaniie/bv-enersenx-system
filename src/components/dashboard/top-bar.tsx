@@ -46,11 +46,14 @@ import { Kbd } from "@/components/ui/kbd"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
+import { getMe, signOut, useStoreValue } from "@/lib/api"
+
 import { nav } from "./nav"
 
 export function TopBar() {
   const [open, setOpen] = React.useState(false)
   const router = useRouter()
+  const me = useStoreValue(getMe)
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -84,12 +87,23 @@ export function TopBar() {
           render={<Button variant="ghost" aria-label="Account" />}
         >
           <Avatar size="sm">
-            <AvatarFallback>HM</AvatarFallback>
+            <AvatarFallback>{me?.user.initials ?? ""}</AvatarFallback>
             <AvatarBadge className="bg-success" />
           </Avatar>
           <ChevronDownIcon data-icon="inline-end" className="text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          {me && (
+            <>
+              <div className="flex flex-col gap-0.5 px-2 py-1.5">
+                <span className="truncate text-sm font-medium">{me.user.name}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {me.org.name}, {me.role}
+                </span>
+              </div>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem>
             <UserIcon />
             Profile
@@ -99,7 +113,13 @@ export function TopBar() {
             Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={async () => {
+              await signOut()
+              router.push("/login/")
+            }}
+          >
             <LogOutIcon />
             Sign out
           </DropdownMenuItem>

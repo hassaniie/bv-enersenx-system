@@ -24,14 +24,8 @@ const eslintConfig = [
     // Vendored ReUI registry code (installed by the shadcn CLI, not edited here).
     // cascader-virtual.tsx disables `react-hooks/incompatible-library`, a rule that
     // only exists in eslint-plugin-react-hooks v6+; this project ships v5 via
-    // eslint-config-next 15, so the unknown-rule comment would fail the build.
-    files: ["src/components/reui/cascader/cascader-virtual.tsx"],
-    linterOptions: { reportUnusedDisableDirectives: "off" },
-    plugins: {
-      "react-hooks": {
-        rules: { "incompatible-library": { create: () => ({}) } },
-      },
-    },
+    // eslint-config-next 15, so linting that one file would fail on the unknown rule.
+    ignores: ["src/components/reui/cascader/cascader-virtual.tsx"],
   },
 ];
 
