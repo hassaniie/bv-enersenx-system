@@ -23,7 +23,7 @@ import { PanelState } from "@/components/dashboard/panel-state"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
-import { can, getMe, useStoreValue, listBillRows, loadScenario, useApiQuery, type BillCheckStatus, type BillRow, type Site } from "@/lib/api"
+import { can, getMe, getSiteMoney, useStoreValue, listBillRows, loadScenario, useApiQuery, type BillCheckStatus, type BillRow, type Site } from "@/lib/api"
 import type { Kpi } from "@/lib/dashboard-data"
 import { matchesQuery } from "@/lib/filter-predicate"
 import { formatBillMonth, formatInt } from "@/lib/format"
@@ -31,8 +31,8 @@ import { formatBillMonth, formatInt } from "@/lib/format"
 type BadgeVariant = React.ComponentProps<typeof Badge>["variant"]
 
 export const billStatusMeta: Record<BillCheckStatus, { label: string; variant: BadgeVariant }> = {
-  overcharged: { label: "Overcharged", variant: "destructive-light" },
-  avoidable: { label: "Avoidable charges", variant: "warning-light" },
+  overcharged: { label: "Possible overcharge", variant: "destructive-light" },
+  avoidable: { label: "Avoidable charge", variant: "warning-light" },
   ok: { label: "Checks out", variant: "success-light" },
 }
 
@@ -118,10 +118,10 @@ function BillsGrid({ rows: all, status, error, onRetry }: { rows: BillRow[]; sta
       },
       { accessorKey: "expected", header: "Should be (PKR)", cell: ({ row }) => formatInt(row.original.expected), size: 130, meta: numeric },
       {
-        accessorKey: "found",
-        header: ({ column }) => <DataGridColumnHeader title="Found (PKR)" column={column} />,
-        cell: ({ row }) => (row.original.found ? formatInt(row.original.found) : <span className="text-muted-foreground">—</span>),
-        size: 110,
+        accessorKey: "overcharged",
+        header: ({ column }) => <DataGridColumnHeader title="Possible overcharge (PKR)" column={column} />,
+        cell: ({ row }) => (row.original.overcharged ? formatInt(row.original.overcharged) : <span className="text-muted-foreground">—</span>),
+        size: 180,
         meta: numeric,
       },
       {
@@ -236,17 +236,25 @@ function BillsGrid({ rows: all, status, error, onRetry }: { rows: BillRow[]; sta
 function SiteBills({ site }: { site: Site }) {
   const router = useRouter()
   const q = useApiQuery(() => listBillRows(site.id), [site.id])
+  const money = useApiQuery(() => getSiteMoney(site.id), [site.id])
   const rows = q.data ?? []
   const year = rows.slice(0, 12)
   const billed = year.reduce((s, r) => s + r.billed, 0)
-  const found = rows.reduce((s, r) => s + r.found, 0)
+  const recoverable = money.data?.recoverable
   const over = rows.filter((r) => r.status === "overcharged").length
   const kpis: Kpi[] = rows.length
     ? [
         { id: "count", label: "Bills on record", value: String(rows.length), unit: rows.length === 1 ? "bill" : "bills", note: `${formatBillMonth(rows.at(-1)!.month)} – ${formatBillMonth(rows[0].month)}`, tone: "neutral" },
         { id: "billed", label: year.length >= 12 ? "Billed, last 12 months" : `Billed, ${year.length} month${year.length === 1 ? "" : "s"}`, value: formatInt(billed), unit: "PKR", note: site.name, tone: "neutral" },
-        { id: "found", label: "Found across bills", value: formatInt(found), unit: "PKR", note: `${((found / billed) * 100).toFixed(1)}% of what you were billed`, tone: found ? "destructive" : "success" },
-        { id: "share", label: "Bills overcharged", value: `${over} of ${rows.length}`, unit: "", note: over ? "Billing errors to raise with your DISCO" : "No billing errors found", tone: over ? "warning" : "success" },
+        {
+          id: "found",
+          label: "Recoverable",
+          value: formatInt(recoverable?.amount ?? 0),
+          unit: "PKR",
+          note: `Possible overcharges, one-time, latest ${Math.min(rows.length, 12)} bills`,
+          tone: recoverable?.amount ? "destructive" : "success",
+        },
+        { id: "share", label: "Bills with possible overcharges", value: `${over} of ${rows.length}`, unit: "", note: over ? "Likely: check them before raising a complaint" : "None found", tone: over ? "warning" : "success" },
       ]
     : []
   return (

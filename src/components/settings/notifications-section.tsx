@@ -17,7 +17,7 @@ import { getOrganisationSettings, saveNotifications, useApiQuery, type Notificat
 import { ReadOnlyNotice, usePermission } from "./shared"
 
 const topics: { id: NotificationTopic; label: string; detail: string }[] = [
-  { id: "bill_anomaly", label: "Bill anomalies", detail: "Billing errors and unusual units on a new bill" },
+  { id: "bill_anomaly", label: "Bill anomalies", detail: "Possible overcharges and unusual units on a new bill" },
   { id: "budget_overrun", label: "Budget overruns", detail: "A bill over the site’s monthly budget" },
   { id: "missing_bill", label: "Missing bills", detail: "The month’s bill isn’t uploaded by the 25th" },
   { id: "bill_reminder", label: "Next-bill reminder", detail: "When the next bill should be out" },

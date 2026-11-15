@@ -86,6 +86,11 @@ export function verify(action: SavingsAction, bills: Bill[]): Verification | und
 /** Suggestions from the latest bill plus every stored action, with derived results. */
 export async function listActions(siteId: string): Promise<SavingsAction[]> {
   await latency(350)
+  return actionsNow(siteId)
+}
+
+/** Synchronous version for other data-layer modules (money.ts). */
+export function actionsNow(siteId: string): SavingsAction[] {
   const db = read()
   const bills = listBillsNow(siteId)
   if (!ownSite(siteId)) return []
@@ -165,6 +170,11 @@ export async function restoreAction(action: SavingsAction) {
   await latency(250)
   assertCan("edit")
   write((d) => ({ ...d, actions: (d.actions ?? []).filter((a) => a.id !== action.id) }))
+}
+
+/** Kinds whose saving later bills have verified: they no longer count as money being lost. */
+export function verifiedKinds(siteId: string): Set<ActionKind> {
+  return new Set(actionsNow(siteId).filter((a) => a.status === "verified").map((a) => a.kind))
 }
 
 /** Kinds whose charge a resolved action removes from future bills (used when new bills are read). */

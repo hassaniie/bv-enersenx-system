@@ -150,13 +150,13 @@ export type BillRow = {
   billed: number
   /** Our recalculation (tariff, no billing errors). */
   expected: number
-  /** Billing errors plus avoidable charges, PKR. */
-  found: number
+  /** Possible overcharges on this bill: one-time, PKR. */
+  overcharged: number
   status: BillCheckStatus
 }
 
 function checkStatus(r: Recalculation): BillCheckStatus {
-  if (r.findings.some((f) => f.kind === "billing_error")) return "overcharged"
+  if (r.findings.some((f) => f.kind === "overcharge")) return "overcharged"
   if (r.findings.some((f) => f.kind === "avoidable")) return "avoidable"
   return "ok"
 }
@@ -175,7 +175,7 @@ export async function listBillRows(siteId: string): Promise<BillRow[]> {
       powerFactor: b.powerFactor,
       billed: b.amountPayable,
       expected: r.expectedTotal,
-      found: r.findings.filter((f) => f.kind !== "opportunity").reduce((s, f) => s + f.impactPkr, 0),
+      overcharged: r.findings.filter((f) => f.kind === "overcharge").reduce((s, f) => s + f.impactPkr, 0),
       status: checkStatus(r),
     }
   })

@@ -102,17 +102,35 @@ export type Bill = {
   uploadedAt: string
 }
 
-export type FindingKind = "billing_error" | "avoidable" | "opportunity"
+/**
+ * The kind of money a finding is about (principles.md, money model):
+ * "overcharge": billed against the tariff's rules, one-time per bill, recoverable;
+ * "avoidable": a legitimate charge the business can stop, per month;
+ * "estimate": what a change could save, per month, estimated.
+ */
+export type FindingKind = "overcharge" | "avoidable" | "estimate"
+
+/** How sure we are (principles.md T2). "confirmed" needs a verified tariff table (Milestone 3). */
+export type Confidence = "confirmed" | "likely" | "check"
+
+/** "How we calculated this": the rule, the inputs from the bill, and the arithmetic. */
+export type Method = {
+  rule: string
+  lines: { label: string; value: string }[]
+  note?: string
+}
 
 export type Finding = {
   id: string
   billId: string
   kind: FindingKind
+  confidence: Confidence
   title: string
   detail: string
-  /** PKR on this bill (tax included). */
+  /** PKR, tax included: one-time on this bill for an overcharge, per month otherwise. */
   impactPkr: number
   nextStep: string
+  method: Method
 }
 
 export type Recalculation = {

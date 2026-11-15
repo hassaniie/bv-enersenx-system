@@ -2,12 +2,12 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { CircleCheckIcon, ClipboardListIcon, HandCoinsIcon, HourglassIcon, LightbulbIcon, ListTodoIcon, TrendingDownIcon, UndoIcon } from "lucide-react"
+import { CircleCheckIcon, ClipboardListIcon, HourglassIcon, LightbulbIcon, ListTodoIcon, UndoIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/reui/badge"
 import { AppShell } from "@/components/dashboard/app-shell"
-import { KpiRow } from "@/components/dashboard/kpi-row"
+import { MoneyHeadlines } from "@/components/money/money-headlines"
 import { OrgSwitch } from "@/components/dashboard/org-switch"
 import { Panel } from "@/components/dashboard/panel"
 import { PanelState, type PanelStatus } from "@/components/dashboard/panel-state"
@@ -19,8 +19,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDate, TODAY } from "@/lib/app-date"
 import { dismissAction, getMe, listActions, loadScenario, restoreAction, useApiQuery, useStoreValue, type ActionStatus, type SavingsAction, type Site } from "@/lib/api"
-import type { Kpi } from "@/lib/dashboard-data"
-import { formatBillMonth, formatInt, formatPkr } from "@/lib/format"
+import { formatBillMonth, formatPkr } from "@/lib/format"
 
 import { AcceptDialog, DoneDialog } from "./action-dialogs"
 
@@ -34,8 +33,6 @@ export const actionStatusMeta: Record<ActionStatus, { label: string; variant: Ba
   not_achieved: { label: "Not achieved", variant: "destructive-light" },
   dismissed: { label: "Dismissed", variant: "outline" },
 }
-
-const kpiIcons = { open: LightbulbIcon, progress: ListTodoIcon, verified: HandCoinsIcon, missed: TrendingDownIcon }
 
 const listSkeleton = (
   <div className="flex flex-col gap-2">
@@ -57,9 +54,18 @@ function Owner({ a }: { a: SavingsAction }) {
   )
 }
 
+/** What an action's figure is: an overcharge per bill, an avoidable charge, an estimate, or a verified saving. */
+function actionMoney(a: SavingsAction): { prefix: string; value: number; period: string } {
+  if (a.verification) return { prefix: "Saved ", value: a.verification.savedMonthlyPkr, period: "a month, verified" }
+  if (a.kind === "fixed" || a.kind === "further") return { prefix: "", value: a.estMonthlyPkr, period: "overcharged per bill, until fixed" }
+  if (a.kind === "pf") return { prefix: "", value: a.estMonthlyPkr, period: "a month, avoidable" }
+  return { prefix: "about ", value: a.estMonthlyPkr, period: "a month, estimate" }
+}
+
 function ActionRow({ a, children, onOpen }: { a: SavingsAction; children?: React.ReactNode; onOpen: (a: SavingsAction) => void }) {
   const overdue = a.status === "accepted" && a.dueDate && a.dueDate < TODAY
-  const value = a.verification ? a.verification.savedMonthlyPkr : a.estMonthlyPkr
+  // Each action's figure keeps its money kind and period (principles.md M1, M2).
+  const money = actionMoney(a)
   return (
     <Item variant="outline" size="sm" role="listitem" className="items-start">
       <ItemContent className="min-w-0 gap-1">
@@ -84,8 +90,9 @@ function ActionRow({ a, children, onOpen }: { a: SavingsAction; children?: React
       </ItemContent>
       <ItemActions className="flex-col items-end gap-2 sm:flex-row sm:items-center">
         <span className="text-sm font-semibold tabular-nums">
-          {formatPkr(value)}
-          <span className="font-normal text-muted-foreground"> / mo</span>
+          {money.prefix}
+          {formatPkr(money.value)}
+          <span className="block text-end text-xs font-normal text-muted-foreground">{money.period}</span>
         </span>
         {children}
       </ItemActions>
@@ -207,25 +214,13 @@ function SiteActions({ site }: { site: Site }) {
   const waiting = by("done")
   const results = by("verified", "not_achieved")
   const dismissed = by("dismissed")
-  const sum = (list: SavingsAction[], f: (a: SavingsAction) => number) => list.reduce((s, a) => s + f(a), 0)
-  const verified = sum(by("verified"), (a) => a.verification!.savedMonthlyPkr)
-
-  const kpis: Kpi[] =
-    q.status === "ready" && all.length
-      ? [
-          { id: "open", label: "Open potential", value: formatInt(sum(suggested, (a) => a.estMonthlyPkr)), unit: "PKR / mo", note: `${suggested.length} suggestion${suggested.length === 1 ? "" : "s"}`, tone: "neutral" },
-          { id: "progress", label: "In progress", value: String(progress.length + waiting.length), unit: "actions", note: `${waiting.length} waiting for the next bill`, tone: "neutral" },
-          { id: "verified", label: "Verified savings", value: formatInt(verified), unit: "PKR / mo", note: verified ? `About ${formatPkr(verified * 12)} a year` : "Nothing verified yet", tone: verified ? "success" : "neutral" },
-          { id: "missed", label: "Not achieved", value: String(by("not_achieved").length), unit: "", note: by("not_achieved").length ? "Open one to see why" : "None so far", tone: by("not_achieved").length ? "warning" : "neutral" },
-        ]
-      : []
 
   const state = { status: q.status as PanelStatus, error: q.error, onRetry: q.retry }
   const upload = () => router.push("/bills/upload/")
 
   return (
     <>
-      <KpiRow {...state} kpis={kpis} icons={kpiIcons} empty={{ icon: <ClipboardListIcon />, title: "No actions yet", description: "Upload a bill; we suggest actions from what it shows.", action: "Upload a bill", onAction: upload }} />
+      <MoneyHeadlines site={site} />
       <div className="grid grid-cols-1 gap-2 @5xl:grid-cols-2">
         <Section
           {...state}

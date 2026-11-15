@@ -117,17 +117,32 @@ export function recalculate(bill: Bill): Recalculation {
   const findings: Finding[] = []
   const withTax = (n: number) => round(n * (1 + GST))
 
+  const pkr = (n: number) => `PKR ${fmt(Math.round(n))}`
+  const sampleNote = "Sample tariff rule, not yet checked against the current NEPRA notification for your DISCO."
+
   const fixedDiff = line(bill.lines, "fixed") - line(expected, "fixed")
   if (fixedDiff > 0) {
     const demand = billingDemandKw(bill.mdiKw, bill.sanctionedKw)
+    const billedKw = Math.round(line(bill.lines, "fixed") / rates0(bill).fixedPerKw)
     findings.push({
       id: `${bill.id}-fixed`,
       billId: bill.id,
-      kind: "billing_error",
+      kind: "overcharge",
+      confidence: "likely",
       title: "Fixed charges billed on the full sanctioned load",
-      detail: `Billed on ${fmt(bill.sanctionedKw)} kW; the tariff bills the higher of your MDI (${fmt(bill.mdiKw)} kW) and half the sanctioned load, so ${fmt(demand)} kW.`,
+      detail: `Billed on ${fmt(billedKw)} kW; the tariff bills the higher of your MDI (${fmt(bill.mdiKw)} kW) and half the sanctioned load, so ${fmt(demand)} kW.`,
       impactPkr: withTax(fixedDiff),
-      nextStep: `File a billing complaint with ${bill.disco} for a correction on the next bill.`,
+      nextStep: `File a billing complaint with ${bill.disco} for a refund and a correction on the next bill.`,
+      method: {
+        rule: `${bill.tariff}: fixed charges are billed on the higher of MDI and half the sanctioned load.`,
+        lines: [
+          { label: "Billed on", value: `${fmt(billedKw)} kW` },
+          { label: "Should be billed on", value: `${fmt(demand)} kW (MDI ${fmt(bill.mdiKw)} kW, half of ${fmt(bill.sanctionedKw)} kW is ${fmt(Math.ceil(bill.sanctionedKw / 2))} kW)` },
+          { label: "Difference", value: `${fmt(billedKw - demand)} kW × PKR ${fmt(rates0(bill).fixedPerKw)} = ${pkr(fixedDiff)}` },
+          { label: "Plus 18% sales tax", value: pkr(withTax(fixedDiff)) },
+        ],
+        note: sampleNote,
+      },
     })
   }
 
@@ -136,24 +151,45 @@ export function recalculate(bill: Bill): Recalculation {
     findings.push({
       id: `${bill.id}-further`,
       billId: bill.id,
-      kind: "billing_error",
+      kind: "overcharge",
+      confidence: "check",
       title: "Further tax charged",
-      detail: "3% further tax applies only to consumers without a sales tax registration (STRN).",
+      detail: "3% further tax applies only to consumers without a sales tax registration (STRN). If you hold one, this is an overcharge.",
       impactPkr: further,
-      nextStep: `If you hold an STRN, send it to ${bill.disco} to stop the charge.`,
+      nextStep: `If you hold an STRN, send it to ${bill.disco} and ask for a refund of this charge.`,
+      method: {
+        rule: "Further tax (3%) is charged only to consumers who are not registered for sales tax.",
+        lines: [
+          { label: "Further tax on this bill", value: pkr(further) },
+          { label: "Why we're not sure", value: "We don't know yet whether your STRN is on file with your DISCO. Add it in Settings to confirm." },
+        ],
+        note: sampleNote,
+      },
     })
   }
 
   const pf = line(bill.lines, "pfPenalty")
   if (pf > 0) {
+    const shortfall = Math.round((PF_TARGET - bill.powerFactor) * 100)
+    const base = line(bill.lines, "peakEnergy") + line(bill.lines, "offPeakEnergy") + line(bill.lines, "fixed")
     findings.push({
       id: `${bill.id}-pf`,
       billId: bill.id,
       kind: "avoidable",
+      confidence: "likely",
       title: "Low power factor penalty",
-      detail: `Power factor ${bill.powerFactor.toFixed(2)} is below 0.90; each 1% below adds 2% to energy and fixed charges.`,
+      detail: `Power factor ${bill.powerFactor.toFixed(2)} is below 0.90; each 1% below adds 2% to energy and fixed charges. It repeats every month until fixed.`,
       impactPkr: withTax(pf),
       nextStep: "Get a capacitor bank sized and checked; most pay back within a few months.",
+      method: {
+        rule: "Below a power factor of 0.90, each 1% shortfall adds 2% of energy and fixed charges.",
+        lines: [
+          { label: "Power factor on this bill", value: `${bill.powerFactor.toFixed(2)}, ${shortfall}% below 0.90` },
+          { label: "Penalty", value: `${shortfall} × 2% × ${pkr(base)} = ${pkr(pf)}` },
+          { label: "Plus 18% sales tax", value: `${pkr(withTax(pf))} a month` },
+        ],
+        note: sampleNote,
+      },
     })
   }
 
@@ -162,14 +198,26 @@ export function recalculate(bill: Bill): Recalculation {
   const peakShare = bill.peakKwh / units
   if (peakShare > 0.15) {
     const shifted = Math.round(bill.peakKwh * 0.2)
+    const saving = shifted * (rates.peak - rates.offPeak)
     findings.push({
       id: `${bill.id}-peak`,
       billId: bill.id,
-      kind: "opportunity",
+      kind: "estimate",
+      confidence: "check",
       title: "Move 20% of peak-hour load",
       detail: `${Math.round(peakShare * 100)}% of your units fall in peak hours. Shifting ${fmt(shifted)} kWh to off-peak saves the rate difference.`,
-      impactPkr: withTax(shifted * (rates.peak - rates.offPeak)),
+      impactPkr: withTax(saving),
       nextStep: "Schedule batch loads (compressors, pumps, pre-cooling) before 5 PM.",
+      method: {
+        rule: "Units moved from peak to off-peak hours cost the off-peak rate instead of the peak rate.",
+        lines: [
+          { label: "Peak units on this bill", value: `${fmt(bill.peakKwh)} kWh (${Math.round(peakShare * 100)}% of all units)` },
+          { label: "Assumed to move", value: `20%, so ${fmt(shifted)} kWh` },
+          { label: "Rate difference", value: `PKR ${rates.peak.toFixed(2)} − PKR ${rates.offPeak.toFixed(2)} per kWh` },
+          { label: "Estimate", value: `${pkr(saving)} + 18% sales tax = ${pkr(withTax(saving))} a month` },
+        ],
+        note: "An estimate: it assumes 20% of peak load can move. Your real saving depends on which machines can run earlier.",
+      },
     })
   }
 
@@ -181,7 +229,9 @@ export function recalculate(bill: Bill): Recalculation {
   }
 }
 
-/** Overcharges plus avoidable charges: money already lost on this bill. */
-export function recoverable(findings: Finding[]) {
-  return findings.filter((f) => f.kind !== "opportunity").reduce((s, f) => s + f.impactPkr, 0)
+/** Possible overcharges on a bill: one-time, can be claimed back. */
+export function overcharged(findings: Finding[]) {
+  return findings.filter((f) => f.kind === "overcharge").reduce((s, f) => s + f.impactPkr, 0)
 }
+
+const rates0 = (bill: Bill) => tariffs[bill.tariff]

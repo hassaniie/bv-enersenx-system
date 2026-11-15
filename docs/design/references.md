@@ -4,6 +4,12 @@ Real-world references from Mobbin for each MVP flow, saved in the private Mobbin
 **[EnerSenX MVP](https://mobbin.com/collections/e39fa539-36b8-4d67-8652-27b0a6ddd61f/mobile/screens)**
 (51 items; only you and your teammates can open it).
 
+**Platform rule.** EnerSenX is a desktop-first B2B web app; the phone matters mainly for bill
+capture. Desktop screens (Home, Bills, bill detail, Actions, Alerts, Reports, Settings) are
+referenced from **web** apps: 10+ per screen, added before that screen is built (section 9
+onwards). iOS references are kept only for capture and phone navigation. Every reference names
+its platform.
+
 How to use this file: Mobbin shows **patterns** (what goes where, in what order, with what words).
 ReUI decides the **look**. We never copy another app's colours, type, illustration or layout chrome.
 "Take" means adopt the pattern; "Avoid" means a pattern we deliberately reject, with the reason.
@@ -88,3 +94,25 @@ Last updated: 2026-11-14 (UX review and design foundations milestone).
 | [Expensify: inbox tabs](https://mobbin.com/screens/d3b7dbf8-3888-4222-9b79-bc7cc8d7b902) (iOS) | Inbox, Reports, centre "+", Workspaces, Account. | **Take** an inbox-first tab set; settings live under the account, not in a tab. |
 | [Cal AI: scanner modes](https://mobbin.com/screens/eadf867f-ca9d-426b-97bd-7aaaaf48528f) / [Shopify: inventory scanner](https://mobbin.com/screens/7a1afa26-153f-41da-9459-fdd306f93a21) (iOS) | Capture mode switcher, help "?", "Last scanned item" and "Review scans" for batches. | **Take** batch capture for multi-month back-fill ("add 11 more bills"), reviewed together afterwards. |
 | [X: Money](https://mobbin.com/screens/924e3b0f-d877-45a2-8725-871c0c02addb) (iOS) | One big number first, four quick actions, then two labelled summary tiles. | **Take** one headline figure on the phone dashboard instead of four equal cards. |
+
+---
+
+# Desktop web references, added per build step
+
+## 9. Money headlines and "How we calculated this" (step 1, the money model; also Home)
+
+All web. Saved to the collection's web tab on 2026-11-15.
+
+| Reference | Platform | Pattern | Take / avoid, and why |
+|---|---|---|---|
+| [Stripe: Home](https://mobbin.com/screens/55a2f72d-176f-4e3b-842b-cb999a421c7e) | web | An info icon next to every metric title (Payments, Gross volume, Net volume); date range and interval controls. | **Take** a definition on every headline. Ours is a "How we calculated this" trigger under each figure, because our figures need arithmetic, not just a definition. |
+| [Stripe: Revenue Recognition](https://mobbin.com/screens/f21ac01f-fef4-416e-bd72-b227975f19ef) | web | Info icon per metric, "Period: Last 12 months", "Updated 3 hours ago", and a "How revenue recognition works" link in a right rail. | **Take** the period stated beside the figure ("Feb 2025 – Jan 2026") and a method link. |
+| [Snowflake: Cost Management](https://mobbin.com/screens/acf53a58-0fc7-49b7-93e0-f62c164ecc79) | web | Three summary cards with info icons; forecast bars are grey and labelled "Forecasted spend", apart from actual spend. | **Take** keeping estimates visibly apart from measured money. "Could save" is always labelled "estimate" and never added to measured figures. |
+| [Mercury: Home](https://mobbin.com/screens/66d54fa0-da1a-4224-a027-d0b0ac2b6e2d) | web | Cash, Expenses and Revenue columns, each headline with "vs prior period"; clicking an entry opens its line items in a side panel. | **Take** tracing a headline to its lines (M7). The Recoverable method lists the bills behind it. |
+| [Revolut: Analytics](https://mobbin.com/screens/ef9b430c-0892-423d-96c4-839934a4d578) | web | Each card leads with one figure, its scope ("This month") and a delta. | **Take** one figure per card with its scope right under it. |
+| [Plane: dashboard data source](https://mobbin.com/screens/978a4158-d65c-45aa-a88d-6897c137cad4) | web | A "Dashboard's data source" popover lists where the numbers come from. | **Take** the popover as the form for "How we calculated this". |
+| [Gumloop: Insights](https://mobbin.com/screens/337deb65-cb56-4502-a27d-b7ea42b599d7) | web | A plain row of KPI numbers, then a chart with "Compare to previous period". | **Take** few headline numbers, then the chart. **Avoid** six equal numbers: we cap Home at three headlines. |
+| [Searchable: AEO insights](https://mobbin.com/screens/683c7cb0-70a2-4a57-972c-4c070b978233) | web | Metric title, info icon and a delta chip. | **Take** the compact title + info pattern for secondary figures. |
+| [Square: Loyalty setup](https://mobbin.com/screens/cd302e1d-8543-4f63-bf28-3d68a0615712) | web | "Complete your setup 80%" progress in the sidebar. | **Take** later (step 3): setup progress that doesn't push the money headlines down. |
+| [Plausible: dashboard](https://mobbin.com/screens/3db69c73-30b1-47ff-8698-4fa9a403b9e6) | web | A KPI strip that doubles as a chart switcher; "28 trial days left · Choose a plan" in the header. | **Take** later (step 7): the trial counter in the header. |
+| [Searchable: annotations](https://mobbin.com/screens/217543bc-0607-4aed-bdd4-fc1631be53aa) | web | A side sheet keeps the chart in view while showing detail. | **Take** detail in a sheet, not a new page, for findings. |

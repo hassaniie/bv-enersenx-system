@@ -36,11 +36,14 @@ export function OpportunitiesPanel({
   opportunities,
   error,
   onRetry,
+  hint,
 }: {
   status: PanelStatus
   opportunities: SavingsOpportunity[]
   error?: string
   onRetry: () => void
+  /** Replaces the summed "Potential PKR … / yr" (organisations with their own bills mix kinds, so never sum them). */
+  hint?: string
 }) {
   const [selected, setSelected] = React.useState<SavingsOpportunity | null>(null)
   const potential = potentialSavings(opportunities)
@@ -48,7 +51,7 @@ export function OpportunitiesPanel({
   return (
     <Panel
       title="Savings Opportunities"
-      hint={status === "ready" && potential > 0 ? `Potential PKR ${formatNumber(potential)} / yr` : undefined}
+      hint={hint ?? (status === "ready" && potential > 0 ? `Potential PKR ${formatNumber(potential)} / yr` : undefined)}
     >
       <PanelState
         status={status}
@@ -85,7 +88,7 @@ export function OpportunitiesPanel({
                 <ItemContent className="min-w-0">
                   <ItemTitle>{o.title}</ItemTitle>
                   <ItemDescription className="tabular-nums">
-                    PKR {formatNumber(o.annualSavings)} est. annual savings
+                    {o.valueLabel ?? `PKR ${formatNumber(o.annualSavings)} est. annual savings`}
                   </ItemDescription>
                 </ItemContent>
                 <ItemActions>
@@ -108,24 +111,23 @@ export function OpportunitiesPanel({
                   {effortMeta[selected.effort].label} to implement
                 </DialogDescription>
               </DialogHeader>
-              <dl className="flex flex-col gap-3 text-sm">
-                <div className="flex items-baseline justify-between gap-2">
-                  <dt className="text-muted-foreground">Est. annual savings</dt>
-                  <dd className="font-semibold tabular-nums">PKR {formatNumber(selected.annualSavings)}</dd>
-                </div>
-                <div className="flex flex-col gap-2">
+              {selected.valueLabel ? (
+                <p className="text-sm font-medium tabular-nums">{selected.valueLabel}</p>
+              ) : (
+                <dl className="flex flex-col gap-3 text-sm">
                   <div className="flex items-baseline justify-between gap-2">
-                    <dt className="text-muted-foreground">Share of total potential</dt>
-                    <dd className="font-medium tabular-nums">
-                      {Math.round((selected.annualSavings / potential) * 100)}%
-                    </dd>
+                    <dt className="text-muted-foreground">Est. annual savings</dt>
+                    <dd className="font-semibold tabular-nums">PKR {formatNumber(selected.annualSavings)}</dd>
                   </div>
-                  <Progress
-                    value={(selected.annualSavings / potential) * 100}
-                    aria-label="Share of total potential"
-                  />
-                </div>
-              </dl>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <dt className="text-muted-foreground">Share of total potential</dt>
+                      <dd className="font-medium tabular-nums">{Math.round((selected.annualSavings / potential) * 100)}%</dd>
+                    </div>
+                    <Progress value={(selected.annualSavings / potential) * 100} aria-label="Share of total potential" />
+                  </div>
+                </dl>
+              )}
               <DialogFooter>
                 <Button variant="outline" onClick={() => setSelected(null)}>
                   Close

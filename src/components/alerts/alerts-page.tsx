@@ -283,7 +283,14 @@ function SiteAlerts({ site }: { site: Site }) {
       ? [
           { id: "open", label: "Open alerts", value: String(all.filter((a) => a.status === "open").length), unit: "", note: `${all.filter((a) => a.status === "acknowledged").length} acknowledged`, tone: "neutral" },
           { id: "critical", label: "Critical", value: String(openList.filter((a) => a.severity === "critical").length), unit: "", note: `Escalate after ${ESCALATE_AFTER_HOURS} h`, tone: openList.some((a) => a.severity === "critical") ? "destructive" : "success" },
-          { id: "stake", label: "PKR at stake", value: formatInt(openList.reduce((s, a) => s + a.impactPkr, 0)), unit: "PKR", note: "Open and acknowledged", tone: "neutral" },
+          {
+            id: "stake",
+            label: "Possible overcharges",
+            value: formatInt(openList.filter((a) => a.kind === "bill_anomaly" && a.severity === "critical").reduce((s, a) => s + a.impactPkr, 0)),
+            unit: "PKR",
+            note: "One-time, on open alerts from the last 3 bills",
+            tone: "neutral",
+          },
           { id: "resolved", label: "Resolved", value: String(all.filter((a) => a.status === "resolved").length), unit: "", note: "From the last 3 bills", tone: "success" },
         ]
       : []

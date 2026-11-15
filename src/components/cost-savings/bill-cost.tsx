@@ -132,16 +132,17 @@ export function BillCostSavings({ site }: { site: Site }) {
         <TariffPanel
           {...state}
           title="Latest Bill by Charge"
+          rateCaption="All-in cost, taxes included,"
           month={d?.latestMonth ? formatBillMonthLong(d.latestMonth) : undefined}
           rows={d?.tariffs ?? []}
           total={d?.tariffTotal ?? { kwh: 0, cost: 0 }}
           blendedRate={d?.blendedRate ?? 0}
           onEmptyAction={upload}
         />
-        <OpportunitiesPanel {...state} opportunities={d?.opportunities ?? []} />
+        <OpportunitiesPanel {...state} opportunities={d?.opportunities ?? []} hint="From the latest bill, each with its own period" />
       </div>
 
-      <BillingPanel {...state} title="Bill History" meterLabel="Reference" invoices={d?.invoices ?? []} onEmptyAction={upload} rowHref={billLink} />
+      <BillingPanel {...state} title="Bill History" meterLabel="Reference" rateLabel="Energy rate" invoices={d?.invoices ?? []} onEmptyAction={upload} rowHref={billLink} />
       <BudgetDialog
         open={budgetOpen}
         onOpenChange={setBudgetOpen}

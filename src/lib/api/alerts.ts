@@ -42,7 +42,7 @@ function derive(siteId: string): Alert[] {
 
   bills.slice(0, ALERT_WINDOW).forEach((b, i) => {
     const raisedAt = b.uploadedAt
-    const errors = recalculate(b).findings.filter((f) => f.kind === "billing_error")
+    const errors = recalculate(b).findings.filter((f) => f.kind === "overcharge")
     if (errors.length) {
       const total = errors.reduce((s, f) => s + f.impactPkr, 0)
       alerts.push({
@@ -50,12 +50,12 @@ function derive(siteId: string): Alert[] {
         siteId,
         kind: "bill_anomaly",
         severity: "critical",
-        title: `${formatBillMonthLong(b.month)} bill overcharged by PKR ${fmt(total)}`,
+        title: `${formatBillMonthLong(b.month)} bill: possible overcharge of PKR ${fmt(total)}`,
         detail: errors.map((f) => f.title).join("; "),
         impactPkr: total,
         month: b.month,
         raisedAt,
-        nextStep: `File a billing complaint with ${b.disco} before the due date.`,
+        nextStep: `Check the bill and file a complaint with ${b.disco} for a refund.`,
         sentTo,
         actionKind: errors.some((f) => f.id.endsWith("-fixed")) ? "fixed" : "further",
       })

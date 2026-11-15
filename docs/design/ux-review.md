@@ -10,7 +10,7 @@ Severity:
 - **Major**: causes real confusion or extra work.
 - **Minor**: polish.
 
-Status column: *open* until fixed; updated as flows ship.
+Status: issues fixed so far are listed under "Fixed" at the end, with the step that fixed them.
 
 ## Measured evidence: one bill, many numbers
 
@@ -71,3 +71,15 @@ Status column: *open* until fixed; updated as flows ship.
 - **Roles enforced in the data layer and explained in the UI** ("View only…").
 - **Accessibility baseline:** axe clean (no critical or serious) on every flow, light and dark,
   at 1440 and 390.
+
+## Fixed
+
+| # | Fixed in | What changed |
+|---|---|---|
+| 1 | Step 1, money model | Overcharges say "one-time, on this bill"; no × 12 anywhere; opportunities and actions show each figure's own kind and period. |
+| 2 | Step 1 | One module (`src/lib/api/money.ts`); "PKR at stake" replaced by "Possible overcharges, one-time"; `tests/money.test.ts` checks the January figure is identical on Home, Bill detail, Bills, Alerts and Actions. |
+| 3 | Step 1 | "All-in cost per kWh (amount payable ÷ units, taxes included)"; the bill-history column is "Energy rate". |
+| 4 | Step 1 | "Possible overcharge" with confidence (Likely or Check); no "billing error" claims in the UI. |
+| 8 | Step 1 | Opportunities drop kinds whose saving is verified; a failed action still counts. |
+| 11 | Step 1 | "How we calculated this" on every finding and every headline. |
+| 12 | Step 1 | Confidence badge on every finding. |

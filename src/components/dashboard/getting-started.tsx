@@ -14,7 +14,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
-import { can, getMe, useStoreValue, getChecklist, getSiteSummary, recoverable, TREND_MIN_BILLS, useApiQuery, type ChecklistItem, type Site } from "@/lib/api"
+import { can, getMe, useStoreValue, getChecklist, getSiteSummary, overcharged, TREND_MIN_BILLS, useApiQuery, type ChecklistItem, type Site } from "@/lib/api"
 import type { Kpi } from "@/lib/dashboard-data"
 import { formatDayMonth } from "@/lib/app-date"
 import { formatBillMonth, formatBillMonthLong, formatInt, formatPkrShort } from "@/lib/format"
@@ -24,6 +24,7 @@ import { BudgetDialog } from "./budget-dialog"
 import { InviteDialog } from "./invite-dialog"
 import { KpiRow } from "./kpi-row"
 import { NextBillNotice } from "./next-bill"
+import { MoneyHeadlines } from "@/components/money/money-headlines"
 import { Panel } from "./panel"
 import { PanelState } from "./panel-state"
 
@@ -43,14 +44,14 @@ export function GettingStarted({ site }: { site: Site }) {
 
   const s = summary.data
   const latest = s?.latest
-  const found = s?.check ? recoverable(s.check.findings) : 0
+  const found = s?.check ? overcharged(s.check.findings) : 0
   const units = latest ? latest.peakKwh + latest.offPeakKwh : 0
   const kpis: Kpi[] = latest
     ? [
         { id: "amount", label: "Latest bill", value: formatInt(latest.amountPayable), unit: "PKR", short: formatPkrShort(latest.amountPayable), note: [formatBillMonth(latest.month), `due ${formatDayMonth(latest.dueDate)}`], tone: "neutral" },
         { id: "units", label: "Units", value: formatInt(units), unit: "kWh", short: `${(units / 1000).toFixed(1)}k kWh`, note: `MDI ${formatInt(latest.mdiKw)} kW of ${formatInt(site.sanctionedKw)} kW sanctioned`, tone: "neutral" },
         { id: "peak", label: "Peak-hour share", value: String(Math.round((latest.peakKwh / units) * 100)), unit: "%", note: `${formatInt(latest.peakKwh)} kWh at the peak rate`, tone: latest.peakKwh / units > 0.2 ? "warning" : "neutral" },
-        { id: "found", label: "Found on this bill", value: formatInt(found), unit: "PKR", short: formatPkrShort(found), note: found ? "Billing errors and avoidable charges" : "Nothing to recover", tone: found ? "destructive" : "success" },
+        { id: "found", label: "Possible overcharges", value: formatInt(found), unit: "PKR", short: formatPkrShort(found), note: found ? `One-time, on the ${formatBillMonth(latest.month)} bill` : "None on this bill", tone: found ? "destructive" : "success" },
       ]
     : []
 
@@ -79,6 +80,7 @@ export function GettingStarted({ site }: { site: Site }) {
   return (
     <>
       <NextBillNotice site={site} />
+      <MoneyHeadlines site={site} />
       {!allDone && (
       <Panel
         title="Get started"
@@ -186,7 +188,7 @@ export function GettingStarted({ site }: { site: Site }) {
       {latest && s?.check && (
         <Panel
           title="What we found"
-          hint={[formatBillMonthLong(latest.month), `${formatPkrShort(found)} recoverable`]}
+          hint={[formatBillMonthLong(latest.month), `${formatPkrShort(found)} possible overcharges, one-time`]}
           meta={
             <Button size="sm" variant="outline" nativeButton={false} render={<Link href={`/bills/view/?id=${encodeURIComponent(latest.id)}`} />}>
               View bill

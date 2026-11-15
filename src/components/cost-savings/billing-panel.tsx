@@ -63,6 +63,7 @@ export function BillingPanel({
   onRetry,
   title = "Detailed Billing & Invoices",
   meterLabel = "Meter ID",
+  rateLabel = "Rate (PKR)",
   onEmptyAction,
   rowHref,
 }: {
@@ -73,6 +74,8 @@ export function BillingPanel({
   title?: string
   /** Column title for `meterId`: a meter, or a bill's reference number. */
   meterLabel?: string
+  /** Column title for `rate`; say exactly what it divides (principles.md M6). */
+  rateLabel?: string
   onEmptyAction?: () => void
   /** Makes the billing period a link, e.g. to the bill's detail page. */
   rowHref?: (row: Invoice) => string
@@ -156,7 +159,7 @@ export function BillingPanel({
       },
       {
         accessorKey: "rate",
-        header: ({ column }) => <DataGridColumnHeader title="Rate (PKR)" column={column} />,
+        header: ({ column }) => <DataGridColumnHeader title={rateLabel} column={column} />,
         size: 110,
         cell: ({ row }) => row.original.rate.toFixed(2),
         meta: numeric,
@@ -191,7 +194,7 @@ export function BillingPanel({
         meta: { skeleton: <Skeleton className="h-5 w-14" /> },
       },
     ],
-    [meterLabel, rowHref]
+    [meterLabel, rateLabel, rowHref]
   )
 
   const table = useTable({

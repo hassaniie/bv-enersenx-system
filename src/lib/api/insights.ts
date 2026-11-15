@@ -13,7 +13,9 @@ import { latency } from "./client"
 import { listBillsNow } from "./bills"
 import { ownSite } from "./sites"
 import { read } from "./store"
-import { recalculate, recoverable } from "./tariff"
+import { verifiedKinds } from "./actions"
+import { siteMoneyNow } from "./money"
+import { recalculate } from "./tariff"
 import type { Bill, BillLineKey } from "./types"
 
 /** Bills needed before a trend chart is drawn. */
@@ -86,20 +88,25 @@ export async function getSiteCost(siteId: string): Promise<SiteCost> {
   const tariffTotal = latest ? { kwh: units(latest), cost: latest.amountPayable } : { kwh: 0, cost: 0 }
   const blendedRate = latest ? round2(latest.amountPayable / units(latest)) : 0
 
-  // Recoverable money per finding type, summed over every bill, as yearly savings.
-  const byTitle = new Map<string, { o: SavingsOpportunity; months: number }>()
-  for (const b of bills) {
-    for (const f of recalculate(b).findings) {
-      const effort = f.kind === "billing_error" ? "easy" : f.kind === "avoidable" ? "medium" : "medium"
-      const cur = byTitle.get(f.title)
-      if (cur) {
-        cur.o.annualSavings += f.impactPkr
-        cur.months += 1
-      } else byTitle.set(f.title, { o: { id: f.id.split("-").pop()!, title: f.title, annualSavings: f.impactPkr, effort }, months: 1 })
-    }
-  }
-  // Average per month × 12, so 1 bill and 12 bills report on the same yearly scale.
-  const opportunities = [...byTitle.values()].map(({ o, months }) => ({ ...o, annualSavings: Math.round((o.annualSavings / months) * 12) }))
+  // Opportunities: the latest bill's findings, minus causes already fixed.
+  // Each keeps its own kind and period (principles.md M1, M2); nothing is annualised.
+  const fixedKinds = verifiedKinds(siteId)
+  const opportunities: SavingsOpportunity[] = latest
+    ? recalculate(latest)
+        .findings.filter((f) => !fixedKinds.has(f.id.split("-").pop() as never))
+        .map((f) => ({
+          id: f.id.split("-").pop()!,
+          title: f.title,
+          annualSavings: f.impactPkr,
+          effort: f.kind === "overcharge" ? "easy" : "medium",
+          valueLabel:
+            f.kind === "overcharge"
+              ? `PKR ${f.impactPkr.toLocaleString("en-US")} possible overcharge on the ${formatBillMonth(latest.month)} bill (one-time)`
+              : f.kind === "avoidable"
+                ? `PKR ${f.impactPkr.toLocaleString("en-US")} a month, avoidable`
+                : `About PKR ${f.impactPkr.toLocaleString("en-US")} a month (estimate)`,
+        }))
+    : []
 
   const invoices: Invoice[] = bills.map((b, i) => {
     const t = taxes(b)
@@ -118,7 +125,7 @@ export async function getSiteCost(siteId: string): Promise<SiteCost> {
     }
   })
 
-  const found = bills.reduce((s, b) => s + recoverable(recalculate(b).findings), 0)
+  const money = siteMoneyNow(siteId)
   const change = latest && previous ? round1(((latest.amountPayable - previous.amountPayable) / previous.amountPayable) * 100) : null
   const kpis: Kpi[] = latest
     ? [
@@ -130,14 +137,14 @@ export async function getSiteCost(siteId: string): Promise<SiteCost> {
           note: change === null ? "First bill on record" : `${change > 0 ? "+" : ""}${change}% vs ${formatMonthTick(`${previous!.month}-01`).slice(0, 3)}`,
           tone: "neutral",
         },
-        { id: "rate", label: "Cost per kWh", value: blendedRate.toFixed(2), unit: "PKR", note: "All-in, taxes included", tone: "neutral" },
+        { id: "rate", label: "All-in cost per kWh", value: blendedRate.toFixed(2), unit: "PKR", note: "Amount payable ÷ units, taxes included", tone: "neutral" },
         {
           id: "savings",
-          label: "Found on your bills",
-          value: found.toLocaleString("en-US"),
+          label: "Recoverable",
+          value: money.recoverable.amount.toLocaleString("en-US"),
           unit: "PKR",
-          note: `Across ${bills.length} bill${bills.length === 1 ? "" : "s"}`,
-          tone: found ? "destructive" : "success",
+          note: "Possible overcharges, one-time",
+          tone: money.recoverable.amount ? "destructive" : "success",
         },
         budget
           ? {
@@ -213,8 +220,8 @@ export async function getBillAnalytics(siteId: string): Promise<BillAnalytics> {
   const insights: Insight[] = latest
     ? recalculate(latest).findings.map((f) => ({
         id: f.id,
-        tone: f.kind === "billing_error" ? "destructive" : f.kind === "avoidable" ? "warning" : "info",
-        icon: f.kind === "billing_error" ? "flag" : f.kind === "avoidable" ? "up" : "trend",
+        tone: f.kind === "overcharge" ? "destructive" : f.kind === "avoidable" ? "warning" : "info",
+        icon: f.kind === "overcharge" ? "flag" : f.kind === "avoidable" ? "up" : "trend",
         title: f.title,
         detail: f.nextStep,
       }))

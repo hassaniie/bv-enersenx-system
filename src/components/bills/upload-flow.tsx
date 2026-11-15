@@ -22,6 +22,7 @@ import { formatBillMonthLong, formatInt, formatPkr } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import { billHref } from "./bills-page"
+import { findingKindMeta } from "./findings-list"
 
 function DeltaCard({ d }: { d: Delta }) {
   const diff = d.now - d.before
@@ -143,7 +144,9 @@ function MonthChangeView({ billId, onAnother }: { billId: string; onAnother: () 
                 </ItemMedia>
                 <ItemContent className="min-w-0">
                   <ItemTitle className="line-clamp-none">{f.title}</ItemTitle>
-                  <ItemDescription>Gone from this bill. It was {formatPkr(f.impactPkr)} in {prevMonth}.</ItemDescription>
+                  <ItemDescription>
+                    Gone from this bill. It was {formatPkr(f.impactPkr)} {findingKindMeta[f.kind].period.replace("on this bill", `on the ${prevMonth} bill`)}.
+                  </ItemDescription>
                 </ItemContent>
                 <Badge variant="success-light">Fixed</Badge>
               </Item>
@@ -155,7 +158,10 @@ function MonthChangeView({ billId, onAnother }: { billId: string; onAnother: () 
                 </ItemMedia>
                 <ItemContent className="min-w-0">
                   <ItemTitle className="line-clamp-none">{f.title}</ItemTitle>
-                  <ItemDescription>New this month: {formatPkr(f.impactPkr)}. {f.nextStep}</ItemDescription>
+                  <ItemDescription>
+                    New this month: {f.kind === "estimate" ? "about " : ""}
+                    {formatPkr(f.impactPkr)} {findingKindMeta[f.kind].period}. {f.nextStep}
+                  </ItemDescription>
                 </ItemContent>
                 <Badge variant="destructive-light">New</Badge>
               </Item>
@@ -167,7 +173,10 @@ function MonthChangeView({ billId, onAnother }: { billId: string; onAnother: () 
                 </ItemMedia>
                 <ItemContent className="min-w-0">
                   <ItemTitle className="line-clamp-none">{f.title}</ItemTitle>
-                  <ItemDescription>Still on this bill: {formatPkr(f.impactPkr)}. {f.nextStep}</ItemDescription>
+                  <ItemDescription>
+                    Still on this bill: {f.kind === "estimate" ? "about " : ""}
+                    {formatPkr(f.impactPkr)} {findingKindMeta[f.kind].period}. {f.nextStep}
+                  </ItemDescription>
                 </ItemContent>
                 <Badge variant="warning-light">Repeats</Badge>
               </Item>

@@ -166,7 +166,7 @@ function Detail({ id }: { id: string }) {
   const d = q.data
   const loading = q.status === "loading" || !d
   const rows = d ? toRows(d.bill.lines, d.check.expected) : []
-  const found = d ? d.check.findings.filter((f) => f.kind !== "opportunity").reduce((s, f) => s + f.impactPkr, 0) : 0
+  const found = d ? d.check.findings.filter((f) => f.kind === "overcharge").reduce((s, f) => s + f.impactPkr, 0) : 0
 
   return (
     <>
@@ -185,7 +185,7 @@ function Detail({ id }: { id: string }) {
               </div>
               <p className="text-sm text-muted-foreground">
                 {d.bill.disco}, billed {formatPkr(d.bill.amountPayable)}
-                {found > 0 ? `, ${formatPkr(found)} of it avoidable or charged in error` : ", matches the tariff"}
+                {found > 0 ? `. Possible overcharges on this bill: ${formatPkr(found)}, one-time.` : ". No possible overcharges found."}
               </p>
             </>
           )}
@@ -234,7 +234,7 @@ function Detail({ id }: { id: string }) {
               <LinesGrid rows={rows} loading={loading} />
             </FramePanel>
           </Frame>
-          <Panel title="What We Found" hint={found ? formatPkr(found) : undefined}>
+          <Panel title="What We Found" hint={found ? `${formatPkr(found)} possible overcharges, one-time` : undefined}>
             <PanelState
               status={loading ? "loading" : "ready"}
               isEmpty={!!d && d.check.findings.length === 0}
