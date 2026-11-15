@@ -32,7 +32,7 @@ import { Card, CardContent } from "@/components/ui/card"
 
 import { currentSiteNow, getMe, listSitesNow, selectSite, useStoreValue } from "@/lib/api"
 
-import { isCurrent, nav, type NavItem } from "./nav"
+import { isCurrent, navFor, type NavItem } from "./nav"
 
 export function Logo() {
   return (
@@ -73,6 +73,8 @@ function ComingSoonItem({ item }: { item: NavItem }) {
 
 export function AppSidebar() {
   const pathname = usePathname()
+  // The six bills-first places, or the full Phase 2 preview navigation (a placeholder until hydrated).
+  const data = useStoreValue(() => getMe()?.org.data) ?? "own"
 
   return (
     <Sidebar collapsible="icon">
@@ -86,10 +88,10 @@ export function AppSidebar() {
       <SidebarContent>
         <nav aria-label="Primary">
           <SidebarGroup>
-            <SidebarGroupLabel>Energy Monitoring System</SidebarGroupLabel>
+            {data === "sample" && <SidebarGroupLabel>Phase 2 preview</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {nav.map((item) => {
+                {navFor(data).map((item) => {
                   if (!item.href) return <ComingSoonItem key={item.title} item={item} />
                   const active = isCurrent(pathname, item.href)
                   return (

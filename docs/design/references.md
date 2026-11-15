@@ -116,3 +116,22 @@ All web. Saved to the collection's web tab on 2026-11-15.
 | [Square: Loyalty setup](https://mobbin.com/screens/cd302e1d-8543-4f63-bf28-3d68a0615712) | web | "Complete your setup 80%" progress in the sidebar. | **Take** later (step 3): setup progress that doesn't push the money headlines down. |
 | [Plausible: dashboard](https://mobbin.com/screens/3db69c73-30b1-47ff-8698-4fa9a403b9e6) | web | A KPI strip that doubles as a chart switcher; "28 trial days left · Choose a plan" in the header. | **Take** later (step 7): the trial counter in the header. |
 | [Searchable: annotations](https://mobbin.com/screens/217543bc-0607-4aed-bdd4-fc1631be53aa) | web | A side sheet keeps the chart in view while showing detail. | **Take** detail in a sheet, not a new page, for findings. |
+
+## 10. Navigation: sidebar, top bar, demo banner (step 2)
+
+All web. Saved to the collection's web tab on 2026-11-15.
+
+| Reference | Platform | Pattern | Take / avoid, and why |
+|---|---|---|---|
+| [Base: Home](https://mobbin.com/screens/b6fbd68e-e8ca-4cff-9de7-9046f18c2cbc) | web | Four items: Home, Discover, Activity, Settings, with Settings last. | **Take** a short list with Settings last. Ours: Home, Bills, Actions, Alerts, Reports, Settings. |
+| [Revolut: web Home](https://mobbin.com/screens/a0766b74-22d8-4d4d-bb9a-a1c55fde5cf6) | web | A four-item rail for a finance product. | **Take**: proof that a finance product can run on very few top-level places. |
+| [Stripe: Balances](https://mobbin.com/screens/ec4bf8ef-b6b8-4fb7-b866-293ac767904e) | web | A short top group, then collapsible product groups; page actions as toolbar buttons. | **Take** a short top group. **Avoid** product groups for now: we have one product. |
+| [Mercury: Home](https://mobbin.com/screens/66d54fa0-da1a-4224-a027-d0b0ac2b6e2d) | web | "+ Add" primary button in the top bar, next to search. | **Take** the always-visible primary action: "Upload bill" in our top bar. |
+| [Canva: Home](https://mobbin.com/screens/025b874d-3af6-4be7-bea2-56276bb38ef5) | web | "Create" as the first rail item; bell at the bottom opens notifications. | **Take** the create action always in reach. We keep the bell in the top bar next to Upload. |
+| [Square: Bill Pay](https://mobbin.com/screens/6767626e-674a-4471-a246-4cd295fabac7) | web | "Complete your setup 67%" at the top of the sidebar; "Take payment" pinned at the bottom. | **Take** later: setup progress out of the main column (step 3). |
+| [Attio: Home](https://mobbin.com/screens/a09bd591-d654-42a2-be75-7cf87688e13e) | web | A "Getting started 1/6" card and "14 days left on trial" in the sidebar. | **Take** later: trial and setup progress in the sidebar footer (steps 3 and 8). |
+| [Stripe: sandbox](https://mobbin.com/screens/682babe7-7dfd-4fbf-a743-b6bbe697855c) | web | A full-width strip: "You're testing in a sandbox. Changes you make here don't affect real customers or payments." | **Take**: confirms our Demo banner (one line, what it means, always on top). |
+| [Searchable: Content](https://mobbin.com/screens/903d5676-bc89-47c2-9556-b1034ef0aa43) | web | Sidebar grouped by labelled sections. | **Avoid** labels for six items; we use one ungrouped list. |
+| [Upwork: Transactions](https://mobbin.com/screens/81b9bc93-3988-44b1-938e-1817f5d447a8) | web | A slim rail; detail opens as a side panel over the list. | **Take** the side panel for detail (Actions, Alerts in steps 5 and 6). |
+| [n8n: workspace](https://mobbin.com/screens/28338d7a-25d5-4fd0-8357-9a770b30ac00) | web | "14 days left · 0/1000 executions" with Upgrade Now in the header. | **Take** later: the trial counter in the header (step 8). |
+| [Spellbook: Home](https://mobbin.com/screens/0997d813-6c21-471c-b0e9-052164e62fab) | web | A slim rail with "+" at the top; trial counter at the top right. | **Take** the same "create first" placement. |

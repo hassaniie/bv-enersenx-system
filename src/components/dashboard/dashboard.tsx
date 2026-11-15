@@ -1,5 +1,6 @@
 "use client"
 
+import { getMe, useStoreValue } from "@/lib/api"
 import { dashboardData, fetchDashboard, type DemoState } from "@/lib/dashboard-data"
 import { useDemoQuery } from "@/lib/use-demo-query"
 
@@ -26,8 +27,10 @@ function SampleDashboard({ demo }: { demo: DemoState }) {
 }
 
 export function Dashboard({ demo }: { demo: DemoState }) {
+  // Bills-first organisations call it Home; the Phase 2 preview keeps "Dashboard".
+  const title = useStoreValue(() => getMe()?.org.data) === "sample" ? "Dashboard" : "Home"
   return (
-    <AppShell title="Dashboard">
+    <AppShell title={title}>
       <OrgSwitch sample={<SampleDashboard demo={demo} />} own={(site) => <GettingStarted site={site} />} />
     </AppShell>
   )

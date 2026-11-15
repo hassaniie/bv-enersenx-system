@@ -350,7 +350,7 @@ function SampleActions() {
 
 export function ActionsPage() {
   return (
-    <AppShell title="Savings Actions">
+    <AppShell title="Actions">
       <OrgSwitch sample={<SampleActions />} own={(site) => <SiteActions site={site} />} />
     </AppShell>
   )

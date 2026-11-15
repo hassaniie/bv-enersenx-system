@@ -83,3 +83,5 @@ Status: issues fixed so far are listed under "Fixed" at the end, with the step t
 | 8 | Step 1 | Opportunities drop kinds whose saving is verified; a failed action still counts. |
 | 11 | Step 1 | "How we calculated this" on every finding and every headline. |
 | 12 | Step 1 | Confidence badge on every finding. |
+| 5 | Step 2, navigation | Bills-first organisations get 6 places (Home, Bills, Actions, Alerts, Reports, Settings), nothing disabled; User Management removed; the old navigation stays only in the Phase 2 preview. |
+| 16 | Step 2 | A first visit opens the 12-bill demo; the live-meter organisation is "Phase 2 preview (live meters)" in the Scenario menu. |

@@ -18,12 +18,9 @@ const line = (b: Bill, k: string) => b.lines.find((l) => l.key === k)?.amount ??
 const units = (b: Bill) => b.peakKwh + b.offPeakKwh
 const fmt = (n: number) => n.toLocaleString("en-US")
 
-export const actionTitles: Record<ActionKind, string> = {
-  fixed: "File a complaint about fixed charges",
-  further: "Send our STRN to stop further tax",
-  pf: "Install a capacitor bank",
-  peak: "Move batch loads out of peak hours",
-}
+import { actionTitles } from "./action-titles"
+
+export { actionTitles }
 
 const kindOf = (findingId: string) => findingId.split("-").pop() as ActionKind
 

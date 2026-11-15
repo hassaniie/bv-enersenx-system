@@ -4,12 +4,14 @@ import * as React from "react"
 import {
   BellIcon,
   ChevronDownIcon,
+  FileTextIcon,
   LaptopIcon,
   LogOutIcon,
   MoonIcon,
   SearchIcon,
   SettingsIcon,
   SunIcon,
+  UploadIcon,
   UserIcon,
 } from "lucide-react"
 import Link from "next/link"
@@ -47,9 +49,9 @@ import { Kbd } from "@/components/ui/kbd"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-import { currentSiteNow, getMe, openAlertCountNow, signOut, useStoreValue } from "@/lib/api"
+import { can, currentSiteNow, getMe, openAlertCountNow, signOut, useStoreValue } from "@/lib/api"
 
-import { nav } from "./nav"
+import { navFor } from "./nav"
 
 export function TopBar() {
   const [open, setOpen] = React.useState(false)
@@ -83,6 +85,13 @@ export function TopBar() {
           <Kbd>⌘K</Kbd>
         </Button>
       </div>
+
+      {me?.org.data === "own" && can(me.role, "edit") && (
+        <Button size="sm" className="hidden md:inline-flex" nativeButton={false} render={<Link href="/bills/upload/" />}>
+          <UploadIcon data-icon="inline-start" />
+          Upload bill
+        </Button>
+      )}
 
       {me?.org.data === "own" && (
         <Button
@@ -128,6 +137,10 @@ export function TopBar() {
             <UserIcon />
             Profile
           </DropdownMenuItem>
+          <DropdownMenuItem className="md:hidden" onClick={() => router.push("/reports/")}>
+            <FileTextIcon />
+            Reports
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push("/settings/")}>
             <SettingsIcon />
             Settings
@@ -152,7 +165,7 @@ export function TopBar() {
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Pages">
-              {nav.map((item) => (
+              {navFor(me?.org.data).map((item) => (
                 <CommandItem
                   key={item.title}
                   disabled={!item.href}
@@ -185,7 +198,7 @@ export function PageHeader({ title }: { title: string }) {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden sm:inline-flex">
-            <BreadcrumbLink render={<Link href="/" />}>Energy Monitoring System</BreadcrumbLink>
+            <BreadcrumbLink render={<Link href="/" />}>EnerSenX</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden sm:inline-flex" />
           <BreadcrumbItem>

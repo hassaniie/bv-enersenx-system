@@ -4,6 +4,8 @@
 
 import type { GeneratedReport, Schedule } from "@/lib/reports-data"
 
+import { withRehmat } from "./demo-seed"
+
 import type { AlertState, Bill, Membership, OrgSettings, Organisation, SavingsAction, Session, Site, User } from "./types"
 
 export const STORAGE_KEY = "enersenx-demo-v1"
@@ -32,8 +34,16 @@ export type Db = {
 
 const created = "2025-06-01"
 
-/** The original demo: the organisation the Figma screens were drawn for, with sample-file data. */
+/**
+ * The default demo: Rehmat Textiles with 12 bills (bills-first, like the MVP),
+ * plus the original live-meter organisation as the "Phase 2 preview".
+ */
 export function seed(): Db {
+  return withRehmat(sampleSeed(), "bills-12")
+}
+
+/** The original demo: the organisation the Figma screens were drawn for, with sample-file data. */
+function sampleSeed(): Db {
   const user: User = { id: "u-hm", name: "Hassan Malik", email: "hassan.malik@example.com", initials: "HM" }
   const org: Organisation = { id: "o-sample", name: "Nestle Pakistan", businessType: "food", data: "sample", createdAt: created }
   const site = (id: string, name: string, city: string, disco: Site["disco"], sanctionedKw: number): Site => ({

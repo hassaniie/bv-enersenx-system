@@ -171,7 +171,7 @@ export function DemoBanner() {
           <AlertDialogHeader>
             <AlertDialogTitle>Reset the demo?</AlertDialogTitle>
             <AlertDialogDescription>
-              Organisations, sites and bills you added in this browser are removed, and the sample organisation comes back.
+              Organisations, sites and bills you added in this browser are removed, and the default demo (Rehmat Textiles, 12 bills) comes back.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -181,7 +181,7 @@ export function DemoBanner() {
               onClick={() => {
                 resetDemo()
                 setOpen(false)
-                toast.success("Demo reset", { description: "You’re back on the sample organisation." })
+                toast.success("Demo reset", { description: "Back to the default demo: Rehmat Textiles, 12 bills." })
                 router.push("/")
               }}
             >
