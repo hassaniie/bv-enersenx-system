@@ -8,7 +8,7 @@ import { AppShell } from "./app-shell"
 import { BottomRow } from "./bottom-row"
 import { BreakdownRow } from "./breakdown-row"
 import { ChartsRow } from "./charts-row"
-import { GettingStarted } from "./getting-started"
+import { Home } from "@/components/home/home"
 import { KpiRow } from "./kpi-row"
 import { OrgSwitch } from "./org-switch"
 
@@ -31,7 +31,7 @@ export function Dashboard({ demo }: { demo: DemoState }) {
   const title = useStoreValue(() => getMe()?.org.data) === "sample" ? "Dashboard" : "Home"
   return (
     <AppShell title={title}>
-      <OrgSwitch sample={<SampleDashboard demo={demo} />} own={(site) => <GettingStarted site={site} />} />
+      <OrgSwitch sample={<SampleDashboard demo={demo} />} own={(site) => <Home site={site} />} />
     </AppShell>
   )
 }

@@ -3,12 +3,12 @@
 import { HandCoinsIcon, PercentIcon, ReceiptTextIcon, TrendingUpIcon, WalletIcon } from "lucide-react"
 
 import { AppShell } from "@/components/dashboard/app-shell"
+import { MovedToHome } from "@/components/home/moved-to-home"
 import { OrgSwitch } from "@/components/dashboard/org-switch"
 import { KpiRow } from "@/components/dashboard/kpi-row"
 import { costSavingsData, fetchCostSavings, type DemoState } from "@/lib/cost-savings-data"
 import { useDemoQuery } from "@/lib/use-demo-query"
 
-import { BillCostSavings } from "./bill-cost"
 import { BillingPanel } from "./billing-panel"
 import { CostChartsRow } from "./cost-charts"
 import { OpportunitiesPanel } from "./opportunities-panel"
@@ -24,7 +24,7 @@ const kpiIcons = {
 export function CostSavings({ demo }: { demo: DemoState }) {
   return (
     <AppShell title="Cost & Savings">
-      <OrgSwitch sample={<SampleCostSavings demo={demo} />} own={(site) => <BillCostSavings site={site} />} />
+      <OrgSwitch sample={<SampleCostSavings demo={demo} />} own={() => <MovedToHome page="Cost & Savings" />} />
     </AppShell>
   )
 }

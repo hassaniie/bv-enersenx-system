@@ -3,6 +3,7 @@
 import { GaugeIcon, LeafIcon, TriangleAlertIcon, ZapIcon } from "lucide-react"
 
 import { AppShell } from "@/components/dashboard/app-shell"
+import { MovedToHome } from "@/components/home/moved-to-home"
 import { OrgSwitch } from "@/components/dashboard/org-switch"
 import { KpiRow } from "@/components/dashboard/kpi-row"
 import { analyticsData, fetchAnalytics, type DemoState } from "@/lib/analytics-data"
@@ -10,7 +11,6 @@ import { useDemoQuery } from "@/lib/use-demo-query"
 
 import { CorrelationPanel, ForecastPanel, TrendPanel } from "./analytics-charts"
 import { AnomaliesPanel, InsightsPanel } from "./analytics-lists"
-import { BillAnalytics } from "./bill-analytics"
 import { HeatmapPanel } from "./heatmap-panel"
 
 const kpiIcons = { efficiency: GaugeIcon, peak: ZapIcon, carbon: LeafIcon, anomalies: TriangleAlertIcon }
@@ -18,7 +18,7 @@ const kpiIcons = { efficiency: GaugeIcon, peak: ZapIcon, carbon: LeafIcon, anoma
 export function Analytics({ demo }: { demo: DemoState }) {
   return (
     <AppShell title="Analytics">
-      <OrgSwitch sample={<SampleAnalytics demo={demo} />} own={(site) => <BillAnalytics site={site} />} />
+      <OrgSwitch sample={<SampleAnalytics demo={demo} />} own={() => <MovedToHome page="Analytics" />} />
     </AppShell>
   )
 }

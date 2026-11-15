@@ -13,17 +13,20 @@ export async function getChecklist(siteId: string): Promise<ChecklistItem[]> {
   const bills = db.bills.filter((b) => b.siteId === siteId && b.status === "confirmed").length
   const members = db.memberships.filter((m) => m.orgId === orgId).length + db.invites.filter((i) => i.orgId === orgId).length
   const budget = db.budgets.some((b) => b.siteId === siteId)
-  return [
+  // Done steps first, so the list starts with progress (goal-gradient); each open step says what it unlocks.
+  const items: ChecklistItem[] = [
+    { id: "site", title: "Add your site and first bill", detail: "Your first bill is checked against the tariff.", done: bills >= 1 },
     {
       id: "bills",
       title: "Upload 12 months of bills",
-      detail: "A full year shows seasonal patterns and every recurring overcharge.",
+      detail: bills >= 3 ? "A full year shows seasonal patterns and every charge that repeats." : "3 months unlock cost trends; 12 show the whole year.",
       done: bills >= BILLS_FOR_A_YEAR,
       progress: { value: Math.min(bills, BILLS_FOR_A_YEAR), max: BILLS_FOR_A_YEAR },
     },
-    { id: "invite", title: "Invite a colleague", detail: "Add your facility manager or finance lead.", done: members > 1 },
-    { id: "budget", title: "Set a monthly budget", detail: "We’ll alert you when a bill goes over it.", done: budget },
+    { id: "invite", title: "Invite a colleague", detail: "Then you can assign fixes to your facility manager or finance lead.", done: members > 1 },
+    { id: "budget", title: "Set a monthly budget", detail: "Unlocks an alert when a bill goes over it.", done: budget },
   ]
+  return items.sort((x, y) => Number(y.done) - Number(x.done))
 }
 
 export async function inviteMember(input: { email: string; role: Role }) {

@@ -141,7 +141,7 @@ export type Recalculation = {
   findings: Finding[]
 }
 
-export type ChecklistItem = { id: "bills" | "invite" | "budget"; title: string; detail: string; done: boolean; progress?: { value: number; max: number } }
+export type ChecklistItem = { id: "site" | "bills" | "invite" | "budget"; title: string; detail: string; done: boolean; progress?: { value: number; max: number } }
 
 export type Session = { userId: string; orgId: string; siteId: string | null }
 

@@ -85,3 +85,7 @@ Status: issues fixed so far are listed under "Fixed" at the end, with the step t
 | 12 | Step 1 | Confidence badge on every finding. |
 | 5 | Step 2, navigation | Bills-first organisations get 6 places (Home, Bills, Actions, Alerts, Reports, Settings), nothing disabled; User Management removed; the old navigation stays only in the Phase 2 preview. |
 | 16 | Step 2 | A first visit opens the 12-bill demo; the live-meter organisation is "Phase 2 preview (live meters)" in the Scenario menu. |
+| 6 | Step 3, Home | Cost & Savings no longer exists for bills-first organisations, so bill history lives only on Bills. Old links say "now part of Home" and redirect. |
+| 7 (Home) | Step 3 | On phones Home shows one headline (Recoverable) and two lines (Losing, Saved); the latest bill starts above the fold. Actions and Alerts follow in steps 5 and 6. |
+| 18 | Step 3 | Analytics folded into Home (peak-hour share by month); live-meter analytics return in Phase 2. |
+| 21 | Step 3 | Setup shows done steps first ("2 of 4 done"); each open step says what it unlocks. |

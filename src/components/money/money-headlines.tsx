@@ -19,6 +19,7 @@ export function MoneyHeadlines({ site, className }: { site: Site; className?: st
   const q = useApiQuery(() => getSiteMoney(site.id), [site.id])
   const m = q.data
   const grid = "grid grid-cols-1 gap-2 @2xl:grid-cols-3"
+  const wide = "hidden gap-2 @md:grid @md:grid-cols-1 @2xl:grid-cols-3"
 
   return (
     <section aria-label="Money at a glance" className={className}>
@@ -37,7 +38,36 @@ export function MoneyHeadlines({ site, className }: { site: Site; className?: st
         empty={{ icon: <HandCoinsIcon />, title: "No bills yet", description: "Upload a bill to see what you can recover and save.", action: "Upload a bill" }}
       >
         {m && (
-          <div className={grid}>
+          /* Phones: one headline and two supporting lines, so content starts above the fold (principles.md U14). */
+          <Card size="sm" className="@md:hidden">
+            <CardContent className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-muted-foreground">Recoverable</span>
+                <span className="flex flex-wrap items-baseline gap-x-1.5">
+                  <span className="text-2xl font-semibold tracking-tight tabular-nums">{formatPkrShort(m.recoverable.amount)}</span>
+                  <span className="text-xs text-muted-foreground">one-time, possible overcharges</span>
+                </span>
+                <HowCalculated method={m.recoverable.method} subject="Recoverable" />
+              </div>
+              <dl className="flex flex-col gap-2 border-t pt-3 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-muted-foreground">Losing per month</dt>
+                  <dd className="font-semibold tabular-nums">{formatPkrShort(m.losing.amount)}</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-muted-foreground">Saved per month</dt>
+                  <dd className="font-semibold tabular-nums">{formatPkrShort(m.saved.amount)}</dd>
+                </div>
+              </dl>
+              <span className="-mt-1 flex flex-wrap gap-x-3">
+                <HowCalculated method={m.losing.method} label="How: losing" subject="Losing per month" />
+                <HowCalculated method={m.saved.method} label="How: saved" subject="Saved per month" />
+              </span>
+            </CardContent>
+          </Card>
+        )}
+        {m && (
+          <div className={wide}>
             <Headline
               icon={HandCoinsIcon}
               label="Recoverable"

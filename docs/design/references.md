@@ -135,3 +135,22 @@ All web. Saved to the collection's web tab on 2026-11-15.
 | [Upwork: Transactions](https://mobbin.com/screens/81b9bc93-3988-44b1-938e-1817f5d447a8) | web | A slim rail; detail opens as a side panel over the list. | **Take** the side panel for detail (Actions, Alerts in steps 5 and 6). |
 | [n8n: workspace](https://mobbin.com/screens/28338d7a-25d5-4fd0-8357-9a770b30ac00) | web | "14 days left · 0/1000 executions" with Upgrade Now in the header. | **Take** later: the trial counter in the header (step 8). |
 | [Spellbook: Home](https://mobbin.com/screens/0997d813-6c21-471c-b0e9-052164e62fab) | web | A slim rail with "+" at the top; trial counter at the top right. | **Take** the same "create first" placement. |
+
+## 11. Home: costs over time and setup progress (step 3)
+
+All web. Saved to the collection's web tab on 2026-11-15. Section 9 covers the money headlines.
+
+| Reference | Platform | Pattern | Take / avoid, and why |
+|---|---|---|---|
+| [Snowflake: Consumption](https://mobbin.com/screens/8202bdab-d6dd-47b1-bee3-be85ef43ce53) | web | Stacked bars by category with a legend; a table with share bars below. | **Take** "Cost by Charge": one stacked bar per bill (energy, fixed, FPA and penalties, taxes). |
+| [Replit: Usage](https://mobbin.com/screens/564aacce-2087-4554-910f-b5581b12be5b) | web | "Total this period" above stacked bars; the tooltip lists each category's amount. | **Take** the per-category tooltip; the chart's tooltip shows each charge. |
+| [Klaviyo: Account usage](https://mobbin.com/screens/68dc63bf-a980-4cb0-bd12-da0b6a83b931) | web | Chart title, then one sentence: "This graph shows… Learn how you're charged". | **Take** one plain sentence under each chart saying what it shows. |
+| [Sprig: Usage](https://mobbin.com/screens/fc58ec55-647b-4551-b7ce-a072a8ef061b) | web | Chart title plus a definition sentence and Learn more. | **Take**, same as Klaviyo. |
+| [Stripe: Billing Usage](https://mobbin.com/screens/837a1c85-1863-4e88-b896-2b613a5b5333) | web | Section title with a one-line explanation; date range and interval controls. | **Take** the explanation; **avoid** range controls until sites have more than 12 bills. |
+| [Stripe: Billing overview](https://mobbin.com/screens/0fe51e19-0041-4562-a91c-3e57ca0afacf) | web | Chart cards with a benchmark line ("median"). | **Take** a reference line: the budget on Cost by Charge and the 20% mark on Peak-Hour Share. |
+| [Mercury: Home](https://mobbin.com/screens/c6cc0102-adb2-4a1d-830c-ddc7f75fac62) | web | Headlines with "vs prior period"; expenses by account with share bars. | **Take** later: "vs previous bill" on the latest-bill facts. |
+| [fal: Usage](https://mobbin.com/screens/1ab60074-9c4d-42b0-b079-9c533c01cb1b) | web | Figures with a caveat line; an empty chart that says when data will appear. | **Take** the empty state: "Trends need 3 months of bills. You have 1." |
+| [Base44: Credit usage](https://mobbin.com/screens/8920555b-97e2-4762-8434-62c78d2955e5) | web | A horizontal bar list, then "Daily usage: see how many credits you used each day." | **Take** the subtitle pattern. |
+| [Searchable: Getting started](https://mobbin.com/screens/b3079404-1529-49f4-b72b-e83535cbe016) | web | "2 of 6 completed" with a bar; done steps struck through; the open step shows one action. | **Take** "Set up": done steps first and struck through, "2 of 4 done", one action per open step. |
+| [Wix: Dashboard setup](https://mobbin.com/screens/f802ec7b-85d5-4d7e-9807-9392016b3a9a) | web | "1/5 completed" and the current step expanded with its action. | **Take** each open step saying what it unlocks. |
+| [Square: Home](https://mobbin.com/screens/9a32644d-c67c-4185-b2f3-f50af9ecf43a) | web | "3 of 6 steps completed" above the performance section, then "Performance, updated…". | **Take** setup above performance, gone once complete. |
