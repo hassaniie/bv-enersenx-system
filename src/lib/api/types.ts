@@ -131,6 +131,8 @@ export type Finding = {
   impactPkr: number
   nextStep: string
   method: Method
+  /** The bill line this finding is about, when it is about one. */
+  line?: BillLineKey
 }
 
 export type Recalculation = {

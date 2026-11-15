@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { HandCoinsIcon, PiggyBankIcon, TrendingDownIcon } from "lucide-react"
 
 import { HowCalculated } from "@/components/money/how-calculated"
@@ -47,7 +48,10 @@ export function MoneyHeadlines({ site, className }: { site: Site; className?: st
                   <span className="text-2xl font-semibold tracking-tight tabular-nums">{formatPkrShort(m.recoverable.amount)}</span>
                   <span className="text-xs text-muted-foreground">one-time, possible overcharges</span>
                 </span>
-                <HowCalculated method={m.recoverable.method} subject="Recoverable" />
+                <span className="flex flex-wrap gap-x-3">
+                  <HowCalculated method={m.recoverable.method} subject="Recoverable" />
+                  {m.recoverable.billCount > 0 && <TraceLink href="/bills/?status=overcharged">See the {m.recoverable.billCount} bill{m.recoverable.billCount === 1 ? "" : "s"}</TraceLink>}
+                </span>
               </div>
               <dl className="flex flex-col gap-2 border-t pt-3 text-sm">
                 <div className="flex items-baseline justify-between gap-3">
@@ -76,6 +80,7 @@ export function MoneyHeadlines({ site, className }: { site: Site; className?: st
               scope={m.recoverable.from && m.recoverable.to ? `Possible overcharges on ${m.recoverable.billCount} bill${m.recoverable.billCount === 1 ? "" : "s"}, ${formatBillMonth(m.recoverable.from)} – ${formatBillMonth(m.recoverable.to)}` : "Possible overcharges"}
               tone={m.recoverable.amount ? "destructive" : "neutral"}
               method={m.recoverable.method}
+              link={m.recoverable.billCount > 0 ? <TraceLink href="/bills/?status=overcharged">See the {m.recoverable.billCount} bill{m.recoverable.billCount === 1 ? "" : "s"}</TraceLink> : undefined}
             />
             <Headline
               icon={TrendingDownIcon}
@@ -85,6 +90,7 @@ export function MoneyHeadlines({ site, className }: { site: Site; className?: st
               scope={`Avoidable ${formatPkr(m.losing.avoidable)} + could save about ${formatPkr(m.losing.couldSave)} (estimate)${m.losing.month ? `, ${formatBillMonth(m.losing.month)} bill` : ""}`}
               tone={m.losing.amount ? "warning" : "neutral"}
               method={m.losing.method}
+              link={m.latest ? <TraceLink href={`/bills/view/?id=${encodeURIComponent(m.latest.billId)}`}>See the bill</TraceLink> : undefined}
             />
             <Headline
               icon={PiggyBankIcon}
@@ -94,6 +100,7 @@ export function MoneyHeadlines({ site, className }: { site: Site; className?: st
               scope={m.saved.actions ? `Verified on later bills, ${m.saved.actions} action${m.saved.actions === 1 ? "" : "s"}` : "Nothing verified yet"}
               tone={m.saved.amount ? "success" : "neutral"}
               method={m.saved.method}
+              link={m.saved.actions ? <TraceLink href="/actions/">See the actions</TraceLink> : undefined}
             />
           </div>
         )}
@@ -117,6 +124,7 @@ function Headline({
   scope,
   tone,
   method,
+  link,
 }: {
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
   label: string
@@ -125,6 +133,8 @@ function Headline({
   scope: string
   tone: keyof typeof tones
   method: React.ComponentProps<typeof HowCalculated>["method"]
+  /** One tap to the figures behind it (principles.md M7). */
+  link?: React.ReactNode
 }) {
   return (
     <Card size="sm">
@@ -141,8 +151,23 @@ function Headline({
           <span className="text-xs text-muted-foreground">{period}</span>
         </span>
         <span className="text-xs text-muted-foreground">{scope}</span>
-        <HowCalculated method={method} subject={label} />
+        <span className="flex flex-wrap gap-x-3">
+          <HowCalculated method={method} subject={label} />
+          {link}
+        </span>
       </CardContent>
     </Card>
+  )
+}
+
+/** From a headline to the figures behind it (principles.md M7). */
+function TraceLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex w-fit items-center gap-1 rounded-sm text-xs text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+    >
+      {children}
+    </Link>
   )
 }

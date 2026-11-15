@@ -154,3 +154,40 @@ All web. Saved to the collection's web tab on 2026-11-15. Section 9 covers the m
 | [Searchable: Getting started](https://mobbin.com/screens/b3079404-1529-49f4-b72b-e83535cbe016) | web | "2 of 6 completed" with a bar; done steps struck through; the open step shows one action. | **Take** "Set up": done steps first and struck through, "2 of 4 done", one action per open step. |
 | [Wix: Dashboard setup](https://mobbin.com/screens/f802ec7b-85d5-4d7e-9807-9392016b3a9a) | web | "1/5 completed" and the current step expanded with its action. | **Take** each open step saying what it unlocks. |
 | [Square: Home](https://mobbin.com/screens/9a32644d-c67c-4185-b2f3-f50af9ecf43a) | web | "3 of 6 steps completed" above the performance section, then "Performance, updated…". | **Take** setup above performance, gone once complete. |
+
+## 12. Bills: list and bill detail (step 4)
+
+All web. Saved to the collection's web tab on 2026-11-15.
+
+**Bills list**
+
+| Reference | Platform | Pattern | Take / avoid, and why |
+|---|---|---|---|
+| [Stripe: Invoices](https://mobbin.com/screens/90ed1ed3-2dff-43c5-90fd-4df445f5a64b) | web | Status tabs as large filter buttons; filter chips; total as the first column. | **Take** filter chips (our `filters`); **avoid** status tabs while every demo bill has the same status. |
+| [Stripe: Invoices, Overdue](https://mobbin.com/screens/0d5a5270-71cb-4ca7-96dc-179160ae1758) | web | A filtered view reached from a status; the filter stays visible. | **Take** `/bills/?status=overcharged`: the list opens filtered, with the filter chip visible and clearable. |
+| [Mercury: Invoices](https://mobbin.com/screens/36f606b5-2ee5-4b26-ba14-0204c5295576) | web | Compact sortable table; the row opens the detail. | **Take** sortable money columns and the month as the link. |
+| [Square: Invoices](https://mobbin.com/screens/49779c48-a258-4370-8f07-02ef11f76a02) | web | "Paid (last 30 days)" summary above the table; search, filter, date, Export. | **Take** one summary above the list, with its scope; on phones it becomes one line. |
+| [Square: Estimates](https://mobbin.com/screens/6480957e-23da-400f-a4af-125f61129b8d) | web | Sortable date and amount columns; status as text with one inline action. | **Take** one action per row at most. |
+| [Shopify: Bill Pay](https://mobbin.com/screens/0c2785b5-59e6-489f-bc50-216cbc0d81d5) | web | Vendor, amount, due date, status, bill number; "Enter missing details" inline on rows that need it. | **Take** later (step 7): "Reading…" and "Enter the numbers" inline on a bill row. |
+| [Shopify: Bill Pay tabs](https://mobbin.com/screens/5a2d171e-3dba-4cdf-b719-629c91e27ced) | web | Status badges with words (Overdue, Unpaid), Import bills as a page action. | **Take** words on every badge (A4); one page action (Upload bill lives in the top bar). |
+| [Canva: Orders and invoices](https://mobbin.com/screens/fc424e75-fdaf-4eb1-ab69-b44ad50d7e0d) | web | Search and filters above a table; "No results found" with no way back. | **Avoid** the dead end: our empty filter result offers "Clear filters". |
+| [Meetup: Payments received](https://mobbin.com/screens/7bf9f52e-2588-4c7b-88ab-c2d4c1ea65cc) | web | A total card above a short table. | **Take** the total with its scope ("Recoverable, possible overcharges, one-time"). |
+| [Unify: Tasks](https://mobbin.com/screens/d0ed0080-e283-4480-bb5a-bf968c41f30c) | web | A filter menu with typed fields and saved views. | **Avoid** saved views for now; 2 fields (year, check result) are enough. |
+| [Midday: Invoices](https://mobbin.com/screens/5313da10-8abf-4f2a-9aec-7a705b12ff3c) | web | Open / Overdue / Paid totals above the list; detail in a side sheet. | **Take** the totals; **avoid** the sheet for bills: a bill is a document with a page of its own. |
+
+**Bill detail**
+
+| Reference | Platform | Pattern | Take / avoid, and why |
+|---|---|---|---|
+| [Stripe: Invoice detail](https://mobbin.com/screens/e9266461-9e6f-475f-b48d-9320c24c835a) | web | Document header (number, status, billed to, amount); actions in a menu; details on the right. | **Take** the header: month, status, DISCO, reference, due date, then the figures; facts on the right. |
+| [Mercury: Invoice](https://mobbin.com/screens/f46a2587-26e3-4922-a8d0-d25acfd64768) | web | Line items with a total row, then the attachment. | **Take** the lines table with an "Amount payable" total; the original file as a header action. |
+| [Square: Client view](https://mobbin.com/screens/9ea0f032-7670-46da-ad18-1836c114f9df) | web | Each line with its arithmetic ("$6.00 ea. × 80") under the name. | **Take** "Our calculation: 273 kW × 1,250" under each line. |
+| [Shopify: Bill](https://mobbin.com/screens/512520ce-bc7e-4819-9cc4-16049b6e6572) | web | Bill total and status first, then a timeline, then the breakdown. | **Take** the order: what it is and what's wrong first, the breakdown after. |
+| [Descript: Invoice](https://mobbin.com/screens/44552d5c-359e-4627-8ba7-149419c5871b) | web | A label–value list for the facts; subtotal and total. | **Take** the label–value Bill Facts. |
+| [Midday: Invoice sheet](https://mobbin.com/screens/5313da10-8abf-4f2a-9aec-7a705b12ff3c) | web | Copyable invoice link; activity history. | **Take** "Send a copy": a summary with the link, copied for email or WhatsApp. |
+| [Revolut: Transaction](https://mobbin.com/screens/39b6da94-c735-43e9-8664-ead03f134696) | web | Detail panel ends in "Get help" for a wrong charge. | **Take** a way to act on a wrong charge on the same screen: "Raise a complaint". |
+| [Stripe: Refund payment](https://mobbin.com/screens/2bdb6a19-8e3b-4225-a79d-692c289fca0d) | web | A dialog with amount, reason and a note, explaining what happens next. | **Take** the complaint dialog: what it is for, the editable text, one primary action ("Copy text"). |
+| [Square: Disputes](https://mobbin.com/screens/7572c6dc-158d-4c88-befa-48bf17c14595) | web | Disputes by state: Needs response, In review, Resolved. | **Take** later (step 5): complaints tracked as actions with their state. |
+| [Upwork: Transaction](https://mobbin.com/screens/81b9bc93-3988-44b1-938e-1817f5d447a8) | web | Fees shown as arithmetic ("$5.00 × 10.0% = $0.50"). | **Take**, same as Square: the arithmetic in place (U10). |
+| [Stripe: Receipt history](https://mobbin.com/screens/65937182-2b16-46e9-8214-2e0c794b8b4b) | web | "View receipt / Send receipt" and a history of what was sent. | **Take** later: a record of complaints sent. |
+| [WeTransfer: Share](https://mobbin.com/screens/518e4c28-a372-4385-bde2-c6854efac665) | web | "Link copied" confirmation after a copy. | **Take** a toast after every copy ("Complaint copied", "Summary copied"). |

@@ -44,6 +44,7 @@ export function KpiRow({
   onRetry,
   icons = dashboardIcons,
   compact,
+  className,
   empty = {
     icon: <ZapIcon />,
     title: "No meters connected",
@@ -60,10 +61,11 @@ export function KpiRow({
   empty?: React.ComponentProps<typeof PanelState>["empty"]
   /** Two columns on phones; use with `short` values. */
   compact?: boolean
+  className?: string
 }) {
   const g = compact ? compactGrid : grid
   return (
-    <section aria-label="Key metrics">
+    <section aria-label="Key metrics" className={className}>
       <PanelState
         status={status}
         isEmpty={kpis.length === 0}

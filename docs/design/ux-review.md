@@ -89,3 +89,7 @@ Status: issues fixed so far are listed under "Fixed" at the end, with the step t
 | 7 (Home) | Step 3 | On phones Home shows one headline (Recoverable) and two lines (Losing, Saved); the latest bill starts above the fold. Actions and Alerts follow in steps 5 and 6. |
 | 18 | Step 3 | Analytics folded into Home (peak-hour share by month); live-meter analytics return in Phase 2. |
 | 21 | Step 3 | Setup shows done steps first ("2 of 4 done"); each open step says what it unlocks. |
+| 7 (Bills) | Step 4, Bills | On phones Bills shows one summary line, then a row per bill (month, billed, possible overcharge); the 9-column table is for wider screens. |
+| M7 | Step 4 | Recoverable links to "See the 12 bills" (the list opens filtered to possible overcharges); Losing links to its bill; Saved to the actions. Each possible overcharge is tagged on the bill line it is about. |
+| 11 (lines) | Step 4 | Every bill line says what the charge is and how we calculated it (U10). |
+| New | Step 4 | Bill detail has "What You Can Do": a drafted complaint to the DISCO (reference, month, each charge, editable, copied with one tap), Make it an action, and Send a copy. |

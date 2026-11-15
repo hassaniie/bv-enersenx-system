@@ -127,6 +127,7 @@ export function recalculate(bill: Bill): Recalculation {
     findings.push({
       id: `${bill.id}-fixed`,
       billId: bill.id,
+      line: "fixed",
       kind: "overcharge",
       confidence: "likely",
       title: "Fixed charges billed on the full sanctioned load",
@@ -151,6 +152,7 @@ export function recalculate(bill: Bill): Recalculation {
     findings.push({
       id: `${bill.id}-further`,
       billId: bill.id,
+      line: "furtherTax",
       kind: "overcharge",
       confidence: "check",
       title: "Further tax charged",
@@ -175,6 +177,7 @@ export function recalculate(bill: Bill): Recalculation {
     findings.push({
       id: `${bill.id}-pf`,
       billId: bill.id,
+      line: "pfPenalty",
       kind: "avoidable",
       confidence: "likely",
       title: "Low power factor penalty",
@@ -202,6 +205,7 @@ export function recalculate(bill: Bill): Recalculation {
     findings.push({
       id: `${bill.id}-peak`,
       billId: bill.id,
+      line: "peakEnergy",
       kind: "estimate",
       confidence: "check",
       title: "Move 20% of peak-hour load",
