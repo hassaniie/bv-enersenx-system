@@ -42,14 +42,9 @@ const toneText: Record<InsightTone, string> = {
   success: "text-success-foreground dark:text-success",
 }
 
-export function InsightsPanel({
-  insights,
-  title = "AI-Generated Insights",
-  hint = "Operational recommendations",
-  ...state
-}: StateProps & { insights: Insight[]; title?: string; hint?: string }) {
+export function InsightsPanel({ insights, ...state }: StateProps & { insights: Insight[] }) {
   return (
-    <Panel title={title} hint={hint}>
+    <Panel title="AI-Generated Insights" hint="Operational recommendations">
       <PanelState
         {...state}
         isEmpty={insights.length === 0}

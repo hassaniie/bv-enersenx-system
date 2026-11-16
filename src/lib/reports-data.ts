@@ -29,8 +29,6 @@ export type ReportTemplate = {
   id: ReportType
   title: string
   description: string
-  /** Why this template can't run yet (e.g. it needs live meters); undefined when it can. */
-  unavailable?: string
 }
 
 export type GeneratedReport = {
@@ -86,7 +84,7 @@ export const reportMonth = new Intl.DateTimeFormat("en-US", { month: "short", ye
   Date.parse(`${completeMonth(0).start}T00:00:00Z`)
 )
 
-export const templates: ReportTemplate[] = [
+const templates: ReportTemplate[] = [
   {
     id: "energy",
     title: "Monthly Energy Summary",

@@ -130,10 +130,6 @@ export function TariffPanel({
   blendedRate,
   error,
   onRetry,
-  month = tariffMonth,
-  title = "Tariff Structure & Load Analysis",
-  onEmptyAction,
-  rateCaption = "Blended rate",
 }: {
   status: PanelStatus
   rows: TariffRow[]
@@ -141,25 +137,19 @@ export function TariffPanel({
   blendedRate: number
   error?: string
   onRetry: () => void
-  /** The month the rows cover, shown in the header. */
-  month?: string
-  title?: string
-  onEmptyAction?: () => void
-  /** Footer label for total cost ÷ units (principles.md M6). */
-  rateCaption?: string
 }) {
   const isEmpty = rows.length === 0
   const peakShare = rows.filter((r) => r.type === "peak").reduce((sum, r) => sum + r.share, 0)
 
   return (
     <Panel
-      title={title}
-      meta={month}
+      title="Tariff Structure & Load Analysis"
+      meta={tariffMonth}
       flush={status !== "error" && (status === "loading" || !isEmpty)}
       footer={
         status === "ready" && !isEmpty ? (
           <>
-            <span className="tabular-nums">{rateCaption} PKR {blendedRate.toFixed(2)} / kWh</span>
+            <span className="tabular-nums">Blended rate PKR {blendedRate.toFixed(2)} / kWh</span>
             <span className="tabular-nums">Peak bands {peakShare.toFixed(1)}% of cost</span>
           </>
         ) : undefined
@@ -176,7 +166,6 @@ export function TariffPanel({
           title: "No tariff configured",
           description: "Add your utility tariff to split costs.",
           action: "Add tariff",
-          onAction: onEmptyAction,
         }}
       >
         <TariffGrid rows={rows} total={total} />

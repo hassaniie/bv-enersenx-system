@@ -54,8 +54,6 @@ export type SavingsOpportunity = {
   /** Estimated annual savings, PKR. */
   annualSavings: number
   effort: Effort
-  /** Overrides the "est. annual savings" line with the figure's own kind and period. */
-  valueLabel?: string
 }
 
 export type InvoiceStatus = "paid" | "pending" | "overdue"

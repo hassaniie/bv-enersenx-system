@@ -2,16 +2,13 @@
 
 import * as React from "react"
 import {
-  BellIcon,
   ChevronDownIcon,
-  FileTextIcon,
   LaptopIcon,
   LogOutIcon,
   MoonIcon,
   SearchIcon,
   SettingsIcon,
   SunIcon,
-  UploadIcon,
   UserIcon,
 } from "lucide-react"
 import Link from "next/link"
@@ -49,15 +46,11 @@ import { Kbd } from "@/components/ui/kbd"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-import { can, currentSiteNow, getMe, openAlertCountNow, signOut, useStoreValue } from "@/lib/api"
-
-import { navFor } from "./nav"
+import { nav } from "./nav"
 
 export function TopBar() {
   const [open, setOpen] = React.useState(false)
   const router = useRouter()
-  const me = useStoreValue(getMe)
-  const alerts = useStoreValue(() => (getMe()?.org.data === "own" ? openAlertCountNow(currentSiteNow()?.id) : 0)) ?? 0
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -86,73 +79,27 @@ export function TopBar() {
         </Button>
       </div>
 
-      {me?.org.data === "own" && can(me.role, "edit") && (
-        <Button size="sm" className="hidden md:inline-flex" nativeButton={false} render={<Link href="/bills/upload/" />}>
-          <UploadIcon data-icon="inline-start" />
-          Upload bill
-        </Button>
-      )}
-
-      {me?.org.data === "own" && (
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={alerts ? `Alerts, ${alerts} open` : "Alerts"}
-          nativeButton={false}
-          render={<Link href="/alerts/" />}
-          className="relative"
-        >
-          <BellIcon />
-          {alerts > 0 && (
-            <Badge variant="destructive" radius="full" className="absolute -end-0.5 -top-0.5 tabular-nums" aria-hidden>
-              {alerts}
-            </Badge>
-          )}
-        </Button>
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger
           render={<Button variant="ghost" aria-label="Account" />}
         >
           <Avatar size="sm">
-            <AvatarFallback>{me?.user.initials ?? ""}</AvatarFallback>
+            <AvatarFallback>HM</AvatarFallback>
             <AvatarBadge className="bg-success" />
           </Avatar>
           <ChevronDownIcon data-icon="inline-end" className="text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {me && (
-            <>
-              <div className="flex flex-col gap-0.5 px-2 py-1.5">
-                <span className="truncate text-sm font-medium">{me.user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {me.org.name}, {me.role}
-                </span>
-              </div>
-              <DropdownMenuSeparator />
-            </>
-          )}
           <DropdownMenuItem>
             <UserIcon />
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem className="md:hidden" onClick={() => router.push("/reports/")}>
-            <FileTextIcon />
-            Reports
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/settings/")}>
+          <DropdownMenuItem>
             <SettingsIcon />
             Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={async () => {
-              await signOut()
-              router.push("/login/")
-            }}
-          >
+          <DropdownMenuItem variant="destructive">
             <LogOutIcon />
             Sign out
           </DropdownMenuItem>
@@ -165,7 +112,7 @@ export function TopBar() {
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Pages">
-              {navFor(me?.org.data).map((item) => (
+              {nav.map((item) => (
                 <CommandItem
                   key={item.title}
                   disabled={!item.href}
@@ -198,7 +145,7 @@ export function PageHeader({ title }: { title: string }) {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden sm:inline-flex">
-            <BreadcrumbLink render={<Link href="/" />}>EnerSenX</BreadcrumbLink>
+            <BreadcrumbLink render={<Link href="/" />}>Energy Monitoring System</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden sm:inline-flex" />
           <BreadcrumbItem>

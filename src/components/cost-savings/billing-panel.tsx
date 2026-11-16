@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import { CalendarIcon, CircleDotIcon, DownloadIcon, MapPinIcon, ReceiptTextIcon } from "lucide-react"
 import { useTable, type ColumnDef, type PaginationState, type SortingState } from "@tanstack/react-table"
 import { toast } from "sonner"
@@ -61,24 +60,11 @@ export function BillingPanel({
   invoices,
   error,
   onRetry,
-  title = "Detailed Billing & Invoices",
-  meterLabel = "Meter ID",
-  rateLabel = "Rate (PKR)",
-  onEmptyAction,
-  rowHref,
 }: {
   status: PanelStatus
   invoices: Invoice[]
   error?: string
   onRetry: () => void
-  title?: string
-  /** Column title for `meterId`: a meter, or a bill's reference number. */
-  meterLabel?: string
-  /** Column title for `rate`; say exactly what it divides (principles.md M6). */
-  rateLabel?: string
-  onEmptyAction?: () => void
-  /** Makes the billing period a link, e.g. to the bill's detail page. */
-  rowHref?: (row: Invoice) => string
 }) {
   const [query, setQuery] = React.useState<FilterQuery>(() => createFilterQuery())
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 8 })
@@ -126,20 +112,13 @@ export function BillingPanel({
         id: "period",
         accessorFn: (row) => row.periodStart,
         header: ({ column }) => <DataGridColumnHeader title="Billing Period" column={column} />,
-        cell: ({ row }) =>
-          rowHref ? (
-            <Link href={rowHref(row.original)} className="font-medium text-foreground underline-offset-4 hover:underline">
-              {row.original.period}
-            </Link>
-          ) : (
-            row.original.period
-          ),
+        cell: ({ row }) => row.original.period,
         size: 180,
         meta: { skeleton: <Skeleton className="h-4 w-32" /> },
       },
       {
         accessorKey: "meterId",
-        header: ({ column }) => <DataGridColumnHeader title={meterLabel} column={column} />,
+        header: ({ column }) => <DataGridColumnHeader title="Meter ID" column={column} />,
         size: 120,
         meta: { skeleton: <Skeleton className="h-4 w-20" /> },
       },
@@ -159,7 +138,7 @@ export function BillingPanel({
       },
       {
         accessorKey: "rate",
-        header: ({ column }) => <DataGridColumnHeader title={rateLabel} column={column} />,
+        header: ({ column }) => <DataGridColumnHeader title="Rate (PKR)" column={column} />,
         size: 110,
         cell: ({ row }) => row.original.rate.toFixed(2),
         meta: numeric,
@@ -194,7 +173,7 @@ export function BillingPanel({
         meta: { skeleton: <Skeleton className="h-5 w-14" /> },
       },
     ],
-    [meterLabel, rateLabel, rowHref]
+    []
   )
 
   const table = useTable({
@@ -236,7 +215,7 @@ export function BillingPanel({
     >
       <Frame spacing="default" className="min-w-0">
         <FrameHeader className="flex-row flex-wrap items-center justify-between gap-2">
-          <FrameTitle>{title}</FrameTitle>
+          <FrameTitle>Detailed Billing & Invoices</FrameTitle>
           <Button
             size="sm"
             disabled={status !== "ready" || rows.length === 0}
@@ -283,7 +262,6 @@ export function BillingPanel({
                 title: "No invoices yet",
                 description: "Invoices appear once a bill is imported.",
                 action: "Import bill",
-                onAction: onEmptyAction,
               }}
             >
               {null}
